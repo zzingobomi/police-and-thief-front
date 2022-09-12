@@ -1,7 +1,7 @@
 import { Entity } from "./entity";
 
 export class Component {
-  private _parent: Entity | null;
+  protected _parent: Entity | null;
 
   constructor() {
     this._parent = null;
@@ -17,5 +17,9 @@ export class Component {
 
   public FindEntity(name: string) {
     return this._parent?.FindEntity(name);
+  }
+
+  public GetComponent(name: string) {
+    return this._parent?.GetComponent(name);
   }
 }

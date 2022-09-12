@@ -1,4 +1,7 @@
-import { IKeyState } from "../controllers/player-input";
+import {
+  BasicCharacterControllerInput,
+  IKeyState,
+} from "../controllers/player-input";
 import { State } from "./player-state";
 
 class StateMap {
@@ -34,9 +37,13 @@ export class FiniteStateMachine {
     state.Enter(prevState);
   }
 
-  public Update(time: number, input: IKeyState) {
+  public Update(time: number, input: BasicCharacterControllerInput) {
     if (this._currentState) {
       this._currentState.Update(time, input);
     }
+  }
+
+  public GetCurrentState() {
+    return this._currentState;
   }
 }

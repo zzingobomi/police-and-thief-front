@@ -1,6 +1,7 @@
 import { Component } from "./component";
 import * as THREE from "three";
 import { EntityManager } from "./entity-manager";
+import { Quaternion, Vector3 } from "three";
 
 class ComponentMap {
   [key: string]: Component;
@@ -56,5 +57,13 @@ export class Entity {
 
   public FindEntity(name: string) {
     return this._manager?.GetEntity(name);
+  }
+
+  public SetPosition(positon: Vector3) {
+    this._position.copy(positon);
+  }
+
+  public SetQuaternion(rotation: Quaternion) {
+    this._rotation.copy(rotation);
   }
 }

@@ -5,3 +5,5 @@ export const PLAYER = "player";
 
 export const THREEJS_CONTROLLER = "ThreeJSController";
 export const OCTREE_CONTROLLER = "OctreeController";
+
+export const BASIC_CHARACTER_CONTROLLER_INPUT = "BasicCharacterControllerInput";

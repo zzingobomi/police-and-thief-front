@@ -17,6 +17,8 @@ export class GameMain {
 
   private _entityManager: EntityManager;
 
+  private _previousTime = 0;
+
   constructor(container: HTMLDivElement) {
     this._divContainer = container;
     this._renderer = null;
@@ -79,7 +81,9 @@ export class GameMain {
   update(time: number) {
     time *= 0.001; // second unit
 
-    this._entityManager.Update(time);
+    const deltaTime = time - this._previousTime;
+    this._entityManager.Update(deltaTime);
+    this._previousTime = time;
   }
 
   resize() {

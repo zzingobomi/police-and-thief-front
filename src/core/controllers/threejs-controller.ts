@@ -63,7 +63,7 @@ export class ThreeJSController extends Component {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     this._scene.add(ambientLight);
 
-    const shadowLight = new THREE.DirectionalLight(0xffffff, 0.2);
+    const shadowLight = new THREE.DirectionalLight(0xffffff, 0.5);
     shadowLight.position.set(200, 500, 200);
     shadowLight.target.position.set(0, 0, 0);
     const directionalLightHelper = new THREE.DirectionalLightHelper(

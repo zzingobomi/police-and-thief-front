@@ -29,6 +29,10 @@ export class BasicCharacterControllerInput extends Component {
     document.addEventListener("keyup", (event) => this._onKeyUp(event));
   }
 
+  get Keys() {
+    return this._keys;
+  }
+
   private _onKeyDown(event: KeyboardEvent) {
     switch (event.key) {
       case "W":

@@ -16,4 +16,8 @@ export class CharacterFSM extends FiniteStateMachine {
     this.AddState(STATE.WALK, new WalkState(this));
     this.AddState(STATE.RUN, new RunState(this));
   }
+
+  public GetAnimation(name: string) {
+    return this._animations[name];
+  }
 }
