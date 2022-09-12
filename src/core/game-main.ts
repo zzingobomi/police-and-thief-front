@@ -4,7 +4,9 @@ import { ThreeJSController } from "./controllers/threejs-controller";
 import { Entity } from "./entity";
 import { EntityManager } from "./entity-manager";
 import { PerspectiveCamera, Scene, WebGLRenderer } from "three";
-import { OCTREE, SPACE, THREEJS, THREEJS_CONTROLLER } from "./constant";
+import { OCTREE, PLAYER, SPACE, THREEJS, THREEJS_CONTROLLER } from "./constant";
+import { BasicCharacterController } from "./controllers/player-entity";
+import { BasicCharacterControllerInput } from "./controllers/player-input";
 
 // TODO: singleton 적용
 export class GameMain {
@@ -25,6 +27,7 @@ export class GameMain {
 
   public Init() {
     this._loadControllers();
+    this._loadPlayer();
     this._loadSpace();
     this._gameStart();
   }
@@ -37,6 +40,13 @@ export class GameMain {
     const octree = new Entity();
     octree.AddComponent(new OctreeController());
     this._entityManager.AddEntity(octree, OCTREE);
+  }
+
+  private _loadPlayer() {
+    const player = new Entity();
+    player.AddComponent(new BasicCharacterControllerInput());
+    player.AddComponent(new BasicCharacterController());
+    this._entityManager.AddEntity(player, PLAYER);
   }
 
   private _loadSpace() {

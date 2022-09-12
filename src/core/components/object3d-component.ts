@@ -22,8 +22,8 @@ export class StaticModelComponent extends Component {
   }
 
   private _loadModel() {
-    this._loader.load("./data/space.glb", (gltf) => {
-      const model = gltf.scene;
+    this._loader.load("./data/space.glb", (glb) => {
+      const model = glb.scene;
       const octree = this.FindEntity(OCTREE)?.GetComponent(OCTREE_CONTROLLER);
       const threejs =
         this.FindEntity(THREEJS)?.GetComponent(THREEJS_CONTROLLER);
