@@ -18,6 +18,9 @@ export const LoggedInRouter = () => {
         <Route path="/room" exact>
           <Room />
         </Route>
+        <Route path="/game" exact>
+          <InGame />
+        </Route>
       </Switch>
     </Router>
   );

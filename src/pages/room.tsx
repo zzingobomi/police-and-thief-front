@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { ColyseusStore } from "../store";
 
 export const Room = () => {
   const room = ColyseusStore.getInstance().GetRoom();
   const [clients, setClients] = useState<string[]>([]);
+  const history = useHistory();
 
   useEffect(() => {
     if (room) {
@@ -27,9 +29,8 @@ export const Room = () => {
     }
   }, []);
 
-  // TODO: Game Start
   const onGameStart = () => {
-    console.log("to do game start");
+    history.push("/game");
   };
 
   return (
