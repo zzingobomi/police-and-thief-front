@@ -5,4 +5,8 @@
   @apply focus:outline-none focus:border-gray-500 p-3 border-2 text-lg border-gray-200 transition-colors;
 }
 
+.primary-button {
+  @apply text-lg font-medium focus:outline-none text-white py-4 transition-colors bg-blue-500 hover:bg-blue-700;
+}
+
 @tailwind utilities;

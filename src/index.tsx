@@ -4,12 +4,18 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { HelmetProvider } from "react-helmet-async";
 import "./styles/styles.css";
+import * as Colyseus from "colyseus.js";
+import { colyseusContext } from "./context";
+
+const client = new Colyseus.Client("ws://localhost:7200");
 
 ReactDOM.render(
   <React.StrictMode>
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
+    <colyseusContext.Provider value={{ client }}>
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
+    </colyseusContext.Provider>
   </React.StrictMode>,
   document.getElementById("root")
 );
