@@ -51,10 +51,10 @@ export class BasicCharacterControllerInput extends Component {
       case "d":
         this._keys.right = true;
         break;
-      case "space":
+      case "":
         this._keys.space = true;
         break;
-      case "shift":
+      case "Shift":
         this._keys.shift = true;
         break;
     }
@@ -78,10 +78,10 @@ export class BasicCharacterControllerInput extends Component {
       case "d":
         this._keys.right = false;
         break;
-      case "space":
+      case "":
         this._keys.space = false;
         break;
-      case "shift":
+      case "Shift":
         this._keys.shift = false;
         break;
     }

@@ -10,6 +10,8 @@ export enum STATE {
   WALK = "Walk",
   RUN = "Run",
   JUMP = "Jump",
+  PUNCH = "Punch",
+  SILLY_DANCE = "Silly_Dance",
 }
 
 export class State {
@@ -59,7 +61,12 @@ export class IdleState extends State {
   Exit() {}
 
   Update(time: number, input: BasicCharacterControllerInput) {
-    if (input.Keys.forward || input.Keys.backward) {
+    if (
+      input.Keys.forward ||
+      input.Keys.backward ||
+      input.Keys.left ||
+      input.Keys.right
+    ) {
       this._parent.SetState(STATE.WALK);
     }
   }
@@ -103,7 +110,12 @@ export class WalkState extends State {
   Exit() {}
 
   Update(time: number, input: BasicCharacterControllerInput) {
-    if (input.Keys.forward || input.Keys.backward) {
+    if (
+      input.Keys.forward ||
+      input.Keys.backward ||
+      input.Keys.left ||
+      input.Keys.right
+    ) {
       if (input.Keys.shift) {
         this._parent.SetState(STATE.RUN);
       }
@@ -152,7 +164,12 @@ export class RunState extends State {
   Exit() {}
 
   Update(time: number, input: BasicCharacterControllerInput) {
-    if (input.Keys.forward || input.Keys.backward) {
+    if (
+      input.Keys.forward ||
+      input.Keys.backward ||
+      input.Keys.left ||
+      input.Keys.right
+    ) {
       if (!input.Keys.shift) {
         this._parent.SetState(STATE.WALK);
       }

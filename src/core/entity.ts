@@ -34,7 +34,8 @@ export class Entity {
     component.SetParent(this);
     this._components[component.constructor.name] = component;
 
-    component.InitComponent();
+    // TODO: Plant UML 그려보면서 다시 확인하기
+    //component.InitComponent();
   }
 
   public GetComponent(name: string): Component {

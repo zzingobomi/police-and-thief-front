@@ -1,5 +1,5 @@
 import { Component } from "../component";
-import { GLTFLoader } from "three-stdlib";
+import { Capsule, GLTFLoader } from "three-stdlib";
 import {
   BASIC_CHARACTER_CONTROLLER_INPUT,
   OCTREE,
@@ -11,7 +11,13 @@ import { ThreeJSController } from "./threejs-controller";
 import * as THREE from "three";
 import { OctreeController } from "./octree-controller";
 import { CharacterFSM } from "../utils/character-fsm";
-import { AnimationAction, AnimationMixer, Group, Vector3 } from "three";
+import {
+  AnimationAction,
+  AnimationMixer,
+  BoxHelper,
+  Group,
+  Vector3,
+} from "three";
 import { STATE } from "../utils/player-state";
 import { BasicCharacterControllerInput } from "./player-input";
 
@@ -29,10 +35,18 @@ export class BasicCharacterController extends Component {
 
   private _stateMachine: CharacterFSM | null;
 
-  // private _decceleration: Vector3;
-  // private _acceleration: Vector3;
-  // private _velocity: Vector3;
-  // private _position: Vector3;
+  private _speed = 0;
+  private _maxSpeed = 0;
+  private _acceleration = 0;
+
+  private _bOnTheGround = false;
+  private _fallingAcceleration = 0;
+  private _fallingSpeed = 0;
+
+  private _previousDirectionOffset = 0;
+
+  private _capsule: Capsule | null;
+  private _boxHelper: BoxHelper | null;
 
   constructor() {
     super();
@@ -42,10 +56,8 @@ export class BasicCharacterController extends Component {
     this._mixer = null;
     this._stateMachine = null;
 
-    // this._decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
-    // this._acceleration = new THREE.Vector3(1, 0.125, 50.0);
-    // this._velocity = new THREE.Vector3(0, 0, 0);
-    // this._position = new THREE.Vector3();
+    this._capsule = null;
+    this._boxHelper = null;
   }
 
   public InitComponent(): void {
@@ -57,9 +69,19 @@ export class BasicCharacterController extends Component {
       return;
     }
 
+    // TODO: Update에서 얻지 말고 최적화 하기
     const input = this.GetComponent(
       BASIC_CHARACTER_CONTROLLER_INPUT
     ) as BasicCharacterControllerInput;
+    const camera = (
+      this.FindEntity(THREEJS)?.GetComponent(
+        THREEJS_CONTROLLER
+      ) as ThreeJSController
+    ).GetCamera();
+    const octree = this.FindEntity(OCTREE)?.GetComponent(
+      OCTREE_CONTROLLER
+    ) as OctreeController;
+
     this._stateMachine.Update(time, input);
 
     if (this._mixer) {
@@ -67,95 +89,148 @@ export class BasicCharacterController extends Component {
     }
 
     const currentState = this._stateMachine.GetCurrentState();
-    if (
-      currentState &&
-      currentState.Name != "walk" &&
-      currentState.Name != "run" &&
-      currentState.Name != "idle"
-    ) {
+    if (!currentState) {
       return;
     }
 
-    /*
-    const velocity = this._velocity;
-    const frameDecceleration = new THREE.Vector3(
-      velocity.x * this._decceleration.x,
-      velocity.y * this._decceleration.y,
-      velocity.z * this._decceleration.z
+    if (!this._target || !camera || !this._capsule) {
+      return;
+    }
+
+    if (currentState.Name === STATE.IDLE) {
+      this._speed = 0;
+      this._maxSpeed = 0;
+      this._acceleration = 0;
+    }
+    if (currentState.Name === STATE.WALK) {
+      this._maxSpeed = 80;
+      this._acceleration = 3;
+    }
+    if (currentState.Name === STATE.RUN) {
+      this._maxSpeed = 350;
+      this._acceleration = 3;
+    }
+
+    const angleCameraDirectionAxisY =
+      Math.atan2(
+        camera.position.x - this._target.position.x,
+        camera.position.z - this._target.position.z
+      ) + Math.PI;
+
+    const rotateQuarternion = new THREE.Quaternion();
+    rotateQuarternion.setFromAxisAngle(
+      new THREE.Vector3(0, 1, 0),
+      angleCameraDirectionAxisY + this._directionOffset(input)
     );
-    frameDecceleration.multiplyScalar(time);
-    frameDecceleration.z =
-      Math.sign(frameDecceleration.z) *
-      Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
 
-    velocity.add(frameDecceleration);
+    this._target.quaternion.rotateTowards(
+      rotateQuarternion,
+      THREE.MathUtils.degToRad(5)
+    );
 
-    const controlObject = this._target;
-    if (!controlObject || !this._target || !this._parent) {
-      console.log("target or parent null!!");
-      return;
+    // 카메라가 바라보는 방향
+    const walkDirection = new THREE.Vector3();
+    camera.getWorldDirection(walkDirection);
+
+    walkDirection.y = this._bOnTheGround ? 0 : -1;
+    walkDirection.normalize();
+
+    walkDirection.applyAxisAngle(
+      new THREE.Vector3(0, 1, 0),
+      this._directionOffset(input)
+    );
+
+    // 걷다가 뛸때 미끄러지는 현상 개선
+    if (this._speed < this._maxSpeed) this._speed += this._acceleration;
+    else this._speed -= this._acceleration * 2;
+
+    if (!this._bOnTheGround) {
+      this._fallingAcceleration += 1;
+      this._fallingSpeed += Math.pow(this._fallingAcceleration, 2);
+    } else {
+      this._fallingAcceleration = 0;
+      this._fallingSpeed = 0;
     }
-    const _Q = new THREE.Quaternion();
-    const _A = new THREE.Vector3();
-    const _R = controlObject.quaternion.clone();
 
-    const acc = this._acceleration.clone();
-    if (input.Keys.shift) {
-      acc.multiplyScalar(2.0);
+    const velocity = new THREE.Vector3(
+      walkDirection.x * this._speed,
+      walkDirection.y * this._fallingSpeed,
+      walkDirection.z * this._speed
+    );
+
+    const deltaPosition = velocity.clone().multiplyScalar(time);
+
+    this._capsule.translate(deltaPosition);
+
+    const result = octree.CapsuleIntersect(this._capsule);
+    // 충돌한 경우
+    if (result) {
+      this._capsule.translate(result.normal.multiplyScalar(result.depth));
+      this._bOnTheGround = true;
     }
+    // 충돌하지 않은 경우
+    else {
+      this._bOnTheGround = false;
+    }
+
+    const previousPosition = this._target.position.clone();
+    const capsuleHeight =
+      this._capsule.end.y - this._capsule.start.y + this._capsule.radius * 2;
+
+    this._target.position.set(
+      this._capsule.start.x,
+      this._capsule.start.y - this._capsule.radius + capsuleHeight / 2,
+      this._capsule.start.z
+    );
+
+    camera.position.x -= previousPosition.x - this._target.position.x;
+    camera.position.z -= previousPosition.z - this._target.position.z;
+
+    // if (this._boxHelper) {
+    //   this._boxHelper.update();
+    // }
+  }
+
+  private _directionOffset(input: BasicCharacterControllerInput) {
+    let directionOffset = 0; // w
 
     if (input.Keys.forward) {
-      velocity.z += acc.z * time;
+      if (input.Keys.left) {
+        directionOffset = Math.PI / 4; // w+a (45도)
+      } else if (input.Keys.right) {
+        directionOffset = -Math.PI / 4; // w+d (-45도)
+      }
+    } else if (input.Keys.backward) {
+      if (input.Keys.left) {
+        directionOffset = Math.PI / 4 + Math.PI / 2; // s+a (135도)
+      } else if (input.Keys.right) {
+        directionOffset = -Math.PI / 4 - Math.PI / 2; // s+d (-135도)
+      } else {
+        directionOffset = Math.PI; // s (180도)
+      }
+    } else if (input.Keys.left) {
+      directionOffset = Math.PI / 2; // a (90도)
+    } else if (input.Keys.right) {
+      directionOffset = -Math.PI / 2; // d (-90도)
+    } else {
+      directionOffset = this._previousDirectionOffset;
     }
-    if (input.Keys.backward) {
-      velocity.z -= acc.z * time;
-    }
-    if (input.Keys.left) {
-      _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * Math.PI * time * this._acceleration.y);
-      _R.multiply(_Q);
-    }
-    if (input.Keys.right) {
-      _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * time * this._acceleration.y);
-      _R.multiply(_Q);
-    }
 
-    controlObject.quaternion.copy(_R);
+    this._previousDirectionOffset = directionOffset;
 
-    const oldPosition = new THREE.Vector3();
-    oldPosition.copy(controlObject.position);
-
-    const forward = new THREE.Vector3(0, 0, 1);
-    forward.applyQuaternion(controlObject.quaternion);
-    forward.normalize();
-
-    const sideways = new THREE.Vector3(1, 0, 0);
-    sideways.applyQuaternion(controlObject.quaternion);
-    sideways.normalize();
-
-    sideways.multiplyScalar(velocity.x * time);
-    forward.multiplyScalar(velocity.z * time);
-
-    const pos = controlObject.position.clone();
-    pos.add(forward);
-    pos.add(sideways);
-
-    controlObject.position.copy(pos);
-    this._position.copy(pos);
-
-    this._parent.SetPosition(this._position);
-    this._parent.SetQuaternion(this._target.quaternion);
-    */
+    return directionOffset;
   }
 
   private _loadModel() {
     this._loader.load("./data/Police_01.glb", (glb) => {
       const model = glb.scene;
-      const octree = this.FindEntity(OCTREE)?.GetComponent(OCTREE_CONTROLLER);
-      const threejs =
-        this.FindEntity(THREEJS)?.GetComponent(THREEJS_CONTROLLER);
-      const scene = (threejs as ThreeJSController).GetScene();
+      const octree = this.FindEntity(OCTREE)?.GetComponent(
+        OCTREE_CONTROLLER
+      ) as OctreeController;
+      const threejs = this.FindEntity(THREEJS)?.GetComponent(
+        THREEJS_CONTROLLER
+      ) as ThreeJSController;
+      const scene = threejs.GetScene();
 
       scene.add(model);
 
@@ -167,18 +242,36 @@ export class BasicCharacterController extends Component {
         }
       });
 
-      (octree as OctreeController).AddModel(model);
+      octree.AddModel(model);
 
       const animationClips = glb.animations;
       this._mixer = new THREE.AnimationMixer(this._target);
       animationClips.forEach((clip) => {
         const name = clip.name;
-        console.log(name);
+        //console.log(name);
         if (this._mixer) this._animations[name] = this._mixer.clipAction(clip);
       });
 
       this._stateMachine = new CharacterFSM(this._animations);
       this._stateMachine.SetState(STATE.IDLE);
+
+      // 캐릭터 모델의 boundingbox 구하기
+      const box = new THREE.Box3().setFromObject(model);
+      model.position.y = (box.max.y - box.min.y) / 2;
+
+      const height = box.max.y - box.min.y;
+      const diameter = box.max.z - box.min.z;
+
+      this._capsule = new Capsule(
+        new THREE.Vector3(0, diameter / 2, 0),
+        new THREE.Vector3(0, height - diameter / 2, 0),
+        diameter / 2
+      );
+
+      // model의 바운딩 helper
+      // const boxHelper = new THREE.BoxHelper(model);
+      // scene.add(boxHelper);
+      // this._boxHelper = boxHelper;
     });
   }
 }

@@ -1,5 +1,5 @@
 import { Component } from "../component";
-import { Octree } from "three-stdlib";
+import { Capsule, Octree } from "three-stdlib";
 import { Object3D } from "three";
 
 export class OctreeController extends Component {
@@ -12,5 +12,9 @@ export class OctreeController extends Component {
 
   public AddModel(model: Object3D) {
     this._worldOctree.fromGraphNode(model);
+  }
+
+  public CapsuleIntersect(capsule: Capsule) {
+    return this._worldOctree.capsuleIntersect(capsule);
   }
 }
