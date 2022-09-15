@@ -11,15 +11,10 @@ import { ThreeJSController } from "./threejs-controller";
 import * as THREE from "three";
 import { OctreeController } from "./octree-controller";
 import { CharacterFSM } from "../utils/character-fsm";
-import {
-  AnimationAction,
-  AnimationMixer,
-  BoxHelper,
-  Group,
-  Vector3,
-} from "three";
+import { AnimationAction, AnimationMixer, BoxHelper, Group } from "three";
 import { STATE } from "../utils/player-state";
 import { BasicCharacterControllerInput } from "./player-input";
+import { IVec3 } from "../interface/player-data";
 
 export class AnimationMap {
   [key: string]: AnimationAction;
@@ -186,6 +181,8 @@ export class BasicCharacterController extends Component {
     camera.position.x -= previousPosition.x - this._target.position.x;
     camera.position.z -= previousPosition.z - this._target.position.z;
 
+    // TODO: 여기서 move update?
+
     // if (this._boxHelper) {
     //   this._boxHelper.update();
     // }
@@ -273,5 +270,37 @@ export class BasicCharacterController extends Component {
       // scene.add(boxHelper);
       // this._boxHelper = boxHelper;
     });
+  }
+
+  public GetPosition() {
+    if (!this._target) return;
+    const position: IVec3 = {
+      x: this._target?.position.x,
+      y: this._target?.position.y,
+      z: this._target?.position.z,
+    };
+    return position;
+  }
+  public GetRotation() {
+    if (!this._target) return;
+    const rotation: IVec3 = {
+      x: this._target?.rotation.x,
+      y: this._target?.rotation.y,
+      z: this._target?.rotation.z,
+    };
+    return rotation;
+  }
+  public GetScale() {
+    if (!this._target) return;
+    const scale: IVec3 = {
+      x: this._target?.scale.x,
+      y: this._target?.scale.y,
+      z: this._target?.scale.z,
+    };
+    return scale;
+  }
+
+  public GetCurrentState() {
+    return this._stateMachine?.GetCurrentState();
   }
 }

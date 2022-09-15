@@ -29,7 +29,7 @@ export class State {
 
   public Enter(prevState: State | null) {}
   public Exit() {}
-  public Update(time: number, input: BasicCharacterControllerInput) {}
+  public Update(time: number, input?: BasicCharacterControllerInput) {}
 }
 
 export class IdleState extends State {
@@ -60,7 +60,11 @@ export class IdleState extends State {
 
   Exit() {}
 
-  Update(time: number, input: BasicCharacterControllerInput) {
+  Update(time: number, input?: BasicCharacterControllerInput) {
+    if (!input) {
+      return;
+    }
+
     if (
       input.Keys.forward ||
       input.Keys.backward ||
@@ -109,7 +113,11 @@ export class WalkState extends State {
 
   Exit() {}
 
-  Update(time: number, input: BasicCharacterControllerInput) {
+  Update(time: number, input?: BasicCharacterControllerInput) {
+    if (!input) {
+      return;
+    }
+
     if (
       input.Keys.forward ||
       input.Keys.backward ||
@@ -163,7 +171,11 @@ export class RunState extends State {
 
   Exit() {}
 
-  Update(time: number, input: BasicCharacterControllerInput) {
+  Update(time: number, input?: BasicCharacterControllerInput) {
+    if (!input) {
+      return;
+    }
+
     if (
       input.Keys.forward ||
       input.Keys.backward ||

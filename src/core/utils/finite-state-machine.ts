@@ -37,7 +37,7 @@ export class FiniteStateMachine {
     state.Enter(prevState);
   }
 
-  public Update(time: number, input: BasicCharacterControllerInput) {
+  public Update(time: number, input?: BasicCharacterControllerInput) {
     if (this._currentState) {
       this._currentState.Update(time, input);
     }

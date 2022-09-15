@@ -8,7 +8,7 @@ class ComponentMap {
 }
 
 export class Entity {
-  private _manager: EntityManager | null;
+  protected _manager: EntityManager | null;
   private _name: string | null;
   private _components: ComponentMap;
 
@@ -42,6 +42,9 @@ export class Entity {
     return this._components[name];
   }
 
+  public GetManager() {
+    return this._manager;
+  }
   public SetManager(manager: EntityManager) {
     this._manager = manager;
   }

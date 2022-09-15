@@ -10,20 +10,18 @@ export const Room = () => {
   useEffect(() => {
     if (room) {
       room.onStateChange.once((state) => {
-        console.log("initial room state:", state);
+        //console.log("initial room state:", state);
       });
       room.onStateChange((state) => {
-        console.log(state);
+        //console.log(state);
       });
       room.onMessage("messages", (message) => {
-        console.log(message);
+        //console.log(message);
       });
       room.onMessage("joined", (clients) => {
-        console.log(clients);
         setClients(clients);
       });
       room.onMessage("left", (clients) => {
-        console.log(clients);
         setClients(clients);
       });
     }

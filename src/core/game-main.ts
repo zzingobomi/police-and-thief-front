@@ -4,9 +4,21 @@ import { ThreeJSController } from "./controllers/threejs-controller";
 import { Entity } from "./entity";
 import { EntityManager } from "./entity-manager";
 import { PerspectiveCamera, Scene, WebGLRenderer } from "three";
-import { OCTREE, PLAYER, SPACE, THREEJS, THREEJS_CONTROLLER } from "./constant";
+import {
+  NETWORK,
+  NETWORK_CONTROLLER,
+  OCTREE,
+  PLAYER,
+  SPACE,
+  SPAWNER,
+  THREEJS,
+  THREEJS_CONTROLLER,
+} from "./constant";
 import { BasicCharacterController } from "./controllers/player-entity";
 import { BasicCharacterControllerInput } from "./controllers/player-input";
+import { PlayerSpawner } from "./network/player-spawner";
+import { NetworkEntitySpawner } from "./network/network-entity-spawner";
+import { NetworkController } from "./network/network-controller";
 
 // TODO: singleton 적용
 export class GameMain {
@@ -29,7 +41,6 @@ export class GameMain {
 
   public Init() {
     this._loadControllers();
-    this._loadPlayer();
     this._loadSpace();
     this._gameStart();
   }
@@ -42,13 +53,15 @@ export class GameMain {
     const octree = new Entity();
     octree.AddComponent(new OctreeController());
     this._entityManager.AddEntity(octree, OCTREE);
-  }
 
-  private _loadPlayer() {
-    const player = new Entity();
-    player.AddComponent(new BasicCharacterControllerInput());
-    player.AddComponent(new BasicCharacterController());
-    this._entityManager.AddEntity(player, PLAYER);
+    const network = new Entity();
+    network.AddComponent(new NetworkController());
+    this._entityManager.AddEntity(network, NETWORK);
+
+    const spawner = new Entity();
+    spawner.AddComponent(new PlayerSpawner());
+    spawner.AddComponent(new NetworkEntitySpawner());
+    this._entityManager.AddEntity(spawner, SPAWNER);
   }
 
   private _loadSpace() {
@@ -69,6 +82,11 @@ export class GameMain {
     this.resize();
 
     requestAnimationFrame(this.render.bind(this));
+
+    const network = this._entityManager
+      .GetEntity(NETWORK)
+      .GetComponent(NETWORK_CONTROLLER) as NetworkController;
+    network.GetSocket()?.send("game.init");
   }
 
   render(time: number) {
