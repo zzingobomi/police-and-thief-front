@@ -5,6 +5,7 @@ import {
   THREEJS,
   THREEJS_CONTROLLER,
 } from "../constant";
+import { FirstPersonCamera } from "../controllers/first-person-camera";
 import { BasicCharacterController } from "../controllers/player-entity";
 import { BasicCharacterControllerInput } from "../controllers/player-input";
 import { ThirdPersonCamera } from "../controllers/third-person-camera";
@@ -27,12 +28,14 @@ export class PlayerSpawner extends Component {
 
     player.AddComponent(new NetworkEntityController());
 
-    const threejs = this.FindEntity(THREEJS)?.GetComponent(
-      THREEJS_CONTROLLER
-    ) as ThreeJSController;
-    player.AddComponent(
-      new ThirdPersonCamera(threejs.GetCamera(), basicCharacterController)
-    );
+    player.AddComponent(new FirstPersonCamera());
+
+    // const threejs = this.FindEntity(THREEJS)?.GetComponent(
+    //   THREEJS_CONTROLLER
+    // ) as ThreeJSController;
+    // player.AddComponent(
+    //   new ThirdPersonCamera(threejs.GetCamera(), basicCharacterController)
+    // );
     this._parent?.GetManager()?.AddEntity(player, PLAYER);
 
     return player;

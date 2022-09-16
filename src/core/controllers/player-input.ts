@@ -1,4 +1,6 @@
 import { Component } from "../component";
+import PubSub from "pubsub-js";
+import { SignalType } from "../signal-type";
 
 export interface IKeyState {
   forward: boolean;
@@ -27,10 +29,20 @@ export class BasicCharacterControllerInput extends Component {
   public InitComponent(): void {
     document.addEventListener("keydown", (event) => this._onKeyDown(event));
     document.addEventListener("keyup", (event) => this._onKeyUp(event));
+    document.addEventListener("mousedown", () => {
+      document.body.requestPointerLock();
+    });
+    document.addEventListener("mousemove", (event) => this._onMouseMove(event));
   }
 
   get Keys() {
     return this._keys;
+  }
+
+  private _onMouseMove(event: MouseEvent) {
+    if (document.pointerLockElement === document.body) {
+      PubSub.publish(SignalType.MOUSE_MOVE, event);
+    }
   }
 
   private _onKeyDown(event: KeyboardEvent) {
