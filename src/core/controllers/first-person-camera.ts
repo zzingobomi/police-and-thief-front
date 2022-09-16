@@ -28,5 +28,7 @@ export class FirstPersonCamera extends Component {
     if (!this._camera) return;
     this._camera.rotation.y -= event.movementX / 500;
     this._camera.rotation.x -= event.movementY / 500;
+
+    // TOOD: rotation world.update
   }
 }

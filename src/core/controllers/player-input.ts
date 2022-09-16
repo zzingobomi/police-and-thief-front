@@ -31,6 +31,7 @@ export class BasicCharacterControllerInput extends Component {
     document.addEventListener("keyup", (event) => this._onKeyUp(event));
     document.addEventListener("mousedown", () => {
       document.body.requestPointerLock();
+      // TODO: 처음에 시작할때 rotation.set(0, 0, 0)
     });
     document.addEventListener("mousemove", (event) => this._onMouseMove(event));
   }
@@ -63,7 +64,7 @@ export class BasicCharacterControllerInput extends Component {
       case "d":
         this._keys.right = true;
         break;
-      case "":
+      case " ":
         this._keys.space = true;
         break;
       case "Shift":
@@ -90,7 +91,7 @@ export class BasicCharacterControllerInput extends Component {
       case "d":
         this._keys.right = false;
         break;
-      case "":
+      case " ":
         this._keys.space = false;
         break;
       case "Shift":

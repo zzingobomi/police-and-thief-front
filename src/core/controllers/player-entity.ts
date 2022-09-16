@@ -17,6 +17,7 @@ import {
   BoxHelper,
   Group,
   PerspectiveCamera,
+  Vector3,
 } from "three";
 import { STATE } from "../utils/player-state";
 import { BasicCharacterControllerInput } from "./player-input";
@@ -24,7 +25,8 @@ import { IPlayerData, IVec3 } from "../interface/player-data";
 import * as Colyseus from "colyseus.js";
 import { ColyseusStore } from "../../store";
 
-const GRAVITY = 30;
+// TODO: 떨어질때 점점 빨라지도록..
+const GRAVITY = 300;
 
 export class AnimationMap {
   [key: string]: AnimationAction;
@@ -64,7 +66,6 @@ export class BasicCharacterController extends Component {
 
   private _camera: PerspectiveCamera | null;
   private _playerVelocity = new THREE.Vector3();
-  private _playerDirection = new THREE.Vector3();
 
   constructor() {
     super();
@@ -118,13 +119,15 @@ export class BasicCharacterController extends Component {
       return;
     }
 
-    // TODO: 아직 이상하게 움직인다..
     // gives a bit of air control
-    const speedDelta = time * (this._bOnTheGround ? 25 : 8);
+    let speedDelta = time * (this._bOnTheGround ? 500 : 80);
     const forwardVector = this.getForwardVector();
     const sideVector = this.getSideVector();
     if (!forwardVector || !sideVector) return;
 
+    if (input.Keys.shift) {
+      speedDelta *= 2;
+    }
     if (input.Keys.forward) {
       this._playerVelocity.add(forwardVector.multiplyScalar(speedDelta));
     }
@@ -136,6 +139,11 @@ export class BasicCharacterController extends Component {
     }
     if (input.Keys.right) {
       this._playerVelocity.add(sideVector.multiplyScalar(speedDelta));
+    }
+    if (this._bOnTheGround) {
+      if (input.Keys.space) {
+        this._playerVelocity.y = 300;
+      }
     }
 
     let damping = Math.exp(-4 * time) - 1;
@@ -165,7 +173,37 @@ export class BasicCharacterController extends Component {
       this._capsule.translate(result.normal.multiplyScalar(result.depth));
     }
 
+    const capsuleHeight =
+      this._capsule.end.y - this._capsule.start.y + this._capsule.radius * 2;
+    this._target.position.set(
+      this._capsule.start.x,
+      this._capsule.start.y - this._capsule.radius + capsuleHeight / 2,
+      this._capsule.start.z
+    );
+
+    // position world update 보내기
     this._camera.position.copy(this._capsule.end);
+
+    // TODO: 뭔가가 바뀌었을때만 보내야 할거 같긴한데.. 최적화 필요..
+    // const playerInfo: IPlayerData = {
+    //   position: {
+    //     x: this._target?.position.x,
+    //     y: this._target?.position.y,
+    //     z: this._target?.position.z,
+    //   },
+    //   rotation: {
+    //     x: this._target?.rotation.x,
+    //     y: this._target?.rotation.y,
+    //     z: this._target?.rotation.z,
+    //   },
+    //   scale: {
+    //     x: this._target?.scale.x,
+    //     y: this._target?.scale.y,
+    //     z: this._target?.scale.z,
+    //   },
+    //   currentState: currentState.Name,
+    // };
+    // this._socket?.send("world.update", playerInfo);
 
     /*
     const velocity = this._velocity;
@@ -364,22 +402,26 @@ export class BasicCharacterController extends Component {
   private getForwardVector() {
     if (!this._camera) return;
 
-    this._camera.getWorldDirection(this._playerDirection);
-    this._playerDirection.y = 0;
-    this._playerDirection.normalize();
+    const playerDirection = new Vector3();
 
-    return this._playerDirection;
+    this._camera.getWorldDirection(playerDirection);
+    playerDirection.y = 0;
+    playerDirection.normalize();
+
+    return playerDirection;
   }
 
   private getSideVector() {
     if (!this._camera) return;
 
-    this._camera.getWorldDirection(this._playerDirection);
-    this._playerDirection.y = 0;
-    this._playerDirection.normalize();
-    this._playerDirection.cross(this._camera.up);
+    const playerDirection = new Vector3();
 
-    return this._playerDirection;
+    this._camera.getWorldDirection(playerDirection);
+    playerDirection.y = 0;
+    playerDirection.normalize();
+    playerDirection.cross(this._camera.up);
+
+    return playerDirection;
   }
 
   private _directionOffset(input: BasicCharacterControllerInput) {
@@ -426,6 +468,7 @@ export class BasicCharacterController extends Component {
     scene.add(model);
 
     this._target = glb.scene;
+    this._target.visible = false;
 
     model.traverse((child) => {
       if (child instanceof THREE.Mesh) {

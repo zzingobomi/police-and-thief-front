@@ -56,6 +56,7 @@ export class ThreeJSController extends Component {
     );
 
     camera.position.set(0, 100, 500);
+    camera.rotation.order = "YXZ";
     this._camera = camera;
   }
 
