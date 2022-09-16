@@ -11,12 +11,20 @@ import { ThreeJSController } from "./threejs-controller";
 import * as THREE from "three";
 import { OctreeController } from "./octree-controller";
 import { CharacterFSM } from "../utils/character-fsm";
-import { AnimationAction, AnimationMixer, BoxHelper, Group } from "three";
+import {
+  AnimationAction,
+  AnimationMixer,
+  BoxHelper,
+  Group,
+  PerspectiveCamera,
+} from "three";
 import { STATE } from "../utils/player-state";
 import { BasicCharacterControllerInput } from "./player-input";
 import { IPlayerData, IVec3 } from "../interface/player-data";
 import * as Colyseus from "colyseus.js";
 import { ColyseusStore } from "../../store";
+
+const GRAVITY = 30;
 
 export class AnimationMap {
   [key: string]: AnimationAction;
@@ -54,6 +62,10 @@ export class BasicCharacterController extends Component {
 
   private _socket: Colyseus.Room | null;
 
+  private _camera: PerspectiveCamera | null;
+  private _playerVelocity = new THREE.Vector3();
+  private _playerDirection = new THREE.Vector3();
+
   constructor() {
     super();
     this._target = null;
@@ -68,9 +80,16 @@ export class BasicCharacterController extends Component {
     this._initialPosition = null;
 
     this._socket = ColyseusStore.getInstance().GetRoom();
+
+    this._camera = null;
   }
 
   public InitComponent(): void {
+    this._camera = (
+      this.FindEntity(THREEJS)?.GetComponent(
+        THREEJS_CONTROLLER
+      ) as ThreeJSController
+    ).GetCamera();
     this._loadModel();
   }
 
@@ -83,11 +102,7 @@ export class BasicCharacterController extends Component {
     const input = this.GetComponent(
       BASIC_CHARACTER_CONTROLLER_INPUT
     ) as BasicCharacterControllerInput;
-    const camera = (
-      this.FindEntity(THREEJS)?.GetComponent(
-        THREEJS_CONTROLLER
-      ) as ThreeJSController
-    ).GetCamera();
+
     const octree = this.FindEntity(OCTREE)?.GetComponent(
       OCTREE_CONTROLLER
     ) as OctreeController;
@@ -99,10 +114,60 @@ export class BasicCharacterController extends Component {
     if (!currentState) {
       return;
     }
-    if (!this._target || !this._capsule) {
+    if (!this._target || !this._capsule || !this._camera) {
       return;
     }
 
+    // TODO: 아직 이상하게 움직인다..
+    // gives a bit of air control
+    const speedDelta = time * (this._bOnTheGround ? 25 : 8);
+    const forwardVector = this.getForwardVector();
+    const sideVector = this.getSideVector();
+    if (!forwardVector || !sideVector) return;
+
+    if (input.Keys.forward) {
+      this._playerVelocity.add(forwardVector.multiplyScalar(speedDelta));
+    }
+    if (input.Keys.backward) {
+      this._playerVelocity.add(forwardVector.multiplyScalar(-speedDelta));
+    }
+    if (input.Keys.left) {
+      this._playerVelocity.add(sideVector.multiplyScalar(-speedDelta));
+    }
+    if (input.Keys.right) {
+      this._playerVelocity.add(sideVector.multiplyScalar(speedDelta));
+    }
+
+    let damping = Math.exp(-4 * time) - 1;
+    if (!this._bOnTheGround) {
+      this._playerVelocity.y -= GRAVITY * time;
+
+      // small air resistance
+      damping *= 0.1;
+    }
+
+    this._playerVelocity.addScaledVector(this._playerVelocity, damping);
+
+    const deltaPosition = this._playerVelocity.clone().multiplyScalar(time);
+    this._capsule.translate(deltaPosition);
+
+    const result = octree.CapsuleIntersect(this._capsule);
+    this._bOnTheGround = false;
+    if (result) {
+      this._bOnTheGround = result.normal.y > 0;
+      if (!this._bOnTheGround) {
+        this._playerVelocity.addScaledVector(
+          result.normal,
+          -result.normal.dot(this._playerVelocity)
+        );
+      }
+
+      this._capsule.translate(result.normal.multiplyScalar(result.depth));
+    }
+
+    this._camera.position.copy(this._capsule.end);
+
+    /*
     const velocity = this._velocity;
     const frameDecceleration = new THREE.Vector3(
       velocity.x * this._decceleration.x,
@@ -189,7 +254,7 @@ export class BasicCharacterController extends Component {
       this._capsule.start.x,
       this._capsule.start.y - this._capsule.radius + capsuleHeight / 2,
       this._capsule.start.z
-    );
+    );    
 
     // TODO: 뭔가가 바뀌었을때만 보내야 할거 같긴한데.. 최적화 필요..
     const playerInfo: IPlayerData = {
@@ -211,6 +276,7 @@ export class BasicCharacterController extends Component {
       currentState: currentState.Name,
     };
     this._socket?.send("world.update", playerInfo);
+    */
 
     /*
     if (currentState.Name === STATE.IDLE) {
@@ -293,6 +359,27 @@ export class BasicCharacterController extends Component {
     // if (this._boxHelper) {
     //   this._boxHelper.update();
     // }
+  }
+
+  private getForwardVector() {
+    if (!this._camera) return;
+
+    this._camera.getWorldDirection(this._playerDirection);
+    this._playerDirection.y = 0;
+    this._playerDirection.normalize();
+
+    return this._playerDirection;
+  }
+
+  private getSideVector() {
+    if (!this._camera) return;
+
+    this._camera.getWorldDirection(this._playerDirection);
+    this._playerDirection.y = 0;
+    this._playerDirection.normalize();
+    this._playerDirection.cross(this._camera.up);
+
+    return this._playerDirection;
   }
 
   private _directionOffset(input: BasicCharacterControllerInput) {

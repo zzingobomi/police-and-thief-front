@@ -11,14 +11,14 @@ export class FirstPersonCamera extends Component {
 
   constructor() {
     super();
-    // TODO: 왜 threejs 가 undefined?
+    this._camera = null;
+  }
+
+  public InitComponent(): void {
     const threejs = this.FindEntity(THREEJS)?.GetComponent(
       THREEJS_CONTROLLER
     ) as ThreeJSController;
     this._camera = threejs.GetCamera();
-  }
-
-  public InitComponent(): void {
     PubSub.subscribe(SignalType.MOUSE_MOVE, (msg, event) => {
       this.onMouseMove(event);
     });
