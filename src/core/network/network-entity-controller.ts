@@ -14,6 +14,7 @@ export class NetworkEntityController extends Component {
   }
 
   public Update(time: number): void {
+    /*
     const player = this.FindEntity(PLAYER)?.GetComponent(
       BASIC_CHARACTER_CONTROLLER
     ) as BasicCharacterController;
@@ -31,5 +32,6 @@ export class NetworkEntityController extends Component {
       };
       this._socket?.send("world.update", playerInfo);
     }
+    */
   }
 }

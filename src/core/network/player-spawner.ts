@@ -1,8 +1,16 @@
 import { Component } from "../component";
-import { PLAYER } from "../constant";
+import {
+  BASIC_CHARACTER_CONTROLLER,
+  PLAYER,
+  THREEJS,
+  THREEJS_CONTROLLER,
+} from "../constant";
 import { BasicCharacterController } from "../controllers/player-entity";
 import { BasicCharacterControllerInput } from "../controllers/player-input";
+import { ThirdPersonCamera } from "../controllers/third-person-camera";
+import { ThreeJSController } from "../controllers/threejs-controller";
 import { Entity } from "../entity";
+import { IVec3 } from "../interface/player-data";
 import { NetworkEntityController } from "./network-entity-controller";
 
 export class PlayerSpawner extends Component {
@@ -10,12 +18,21 @@ export class PlayerSpawner extends Component {
     super();
   }
 
-  // TODO: 서버로 부터 받은 위치 업데이트 하기..? 여기서 해야 하나?
   public Spawn() {
     const player = new Entity();
     player.AddComponent(new BasicCharacterControllerInput());
-    player.AddComponent(new BasicCharacterController());
+
+    const basicCharacterController = new BasicCharacterController();
+    player.AddComponent(basicCharacterController);
+
     player.AddComponent(new NetworkEntityController());
+
+    const threejs = this.FindEntity(THREEJS)?.GetComponent(
+      THREEJS_CONTROLLER
+    ) as ThreeJSController;
+    player.AddComponent(
+      new ThirdPersonCamera(threejs.GetCamera(), basicCharacterController)
+    );
     this._parent?.GetManager()?.AddEntity(player, PLAYER);
 
     return player;

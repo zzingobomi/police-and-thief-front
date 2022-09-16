@@ -25,6 +25,9 @@ export class NpcController extends Component {
 
   private _stateMachine: CharacterFSM | null;
 
+  // TODO: 다른방법 생각해보기..
+  private _initialPosition: IVec3 | null;
+
   constructor() {
     super();
     this._target = null;
@@ -32,6 +35,8 @@ export class NpcController extends Component {
     this._animations = {};
     this._mixer = null;
     this._stateMachine = null;
+
+    this._initialPosition = null;
   }
 
   public InitComponent(): void {
@@ -84,6 +89,14 @@ export class NpcController extends Component {
 
       this._stateMachine = new CharacterFSM(this._animations);
       this._stateMachine.SetState(STATE.IDLE);
+
+      if (this._initialPosition) {
+        this._target.position.set(
+          this._initialPosition.x,
+          this._initialPosition.y,
+          this._initialPosition.z
+        );
+      }
     });
   }
 
@@ -97,5 +110,9 @@ export class NpcController extends Component {
     if (this._mixer) {
       this._mixer.update(time);
     }
+  }
+
+  public SetInitialPosition(position: IVec3) {
+    this._initialPosition = position;
   }
 }
