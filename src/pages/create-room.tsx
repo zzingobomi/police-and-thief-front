@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import { colyseusContext } from "../context";
@@ -36,10 +37,11 @@ export const CreateRoom = () => {
 
   return (
     <div className="h-screen flex items-center flex-col mt-10 lg:mt-28">
+      <Helmet>
+        <title>Create Room | Police {"&"} Thief</title>
+      </Helmet>
       <div className="w-full max-w-screen-sm flex flex-col px-5 items-center">
-        <h4 className="w-full font-medium text-center text-3xl mb-5">
-          Create Room
-        </h4>
+        <h4 className="title">CREATE ROOM</h4>
 
         <form
           onSubmit={handleSubmit(onSubmit)}

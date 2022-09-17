@@ -1,6 +1,10 @@
 @tailwind base;
 @tailwind components;
 
+.title {
+  @apply w-full font-bold text-center text-3xl mb-5;
+}
+
 .input {
   @apply focus:outline-none focus:border-gray-500 p-3 border-2 text-lg border-gray-200 transition-colors;
 }

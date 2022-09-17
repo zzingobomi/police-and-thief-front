@@ -627,6 +627,15 @@ video {
   }
 }
 
+.title {
+  margin-bottom: 1.25rem;
+  width: 100%;
+  text-align: center;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+}
+
 .input {
   border-width: 2px;
   --tw-border-opacity: 1;

@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { colyseusContext } from "../context";
 import { COLYSEUS_LOBBY_ROOM } from "../core/constant";
 import * as Colyseus from "colyseus.js";
-import { ColyseusStore } from "../store";
+import { RoomItem } from "../components/room-item";
 
 interface IRoomInfo {
   allRooms: Colyseus.RoomAvailable[];
@@ -16,7 +17,6 @@ const roomInfo: IRoomInfo = {
 export const Lobby = () => {
   const { client } = useContext(colyseusContext);
   const [allRooms, setAllRooms] = useState<Colyseus.RoomAvailable[]>([]);
-  const history = useHistory();
 
   const roomLog = () => {
     for (const room of roomInfo.allRooms) {
@@ -60,14 +60,6 @@ export const Lobby = () => {
     });
   };
 
-  const clickRoomEnter = async (roomId: string) => {
-    const room = await client?.joinById(roomId);
-    if (room) {
-      ColyseusStore.getInstance().SetRoom(room);
-      history.push("/room");
-    }
-  };
-
   useEffect(() => {
     let isMounted = true;
     async function joinLobby() {
@@ -85,24 +77,16 @@ export const Lobby = () => {
   }, []);
   return (
     <div className="h-screen flex items-center flex-col mt-10 lg:mt-28">
+      <Helmet>
+        <title>Lobby | Police {"&"} Thief</title>
+      </Helmet>
       <div className="w-full max-w-screen-sm flex flex-col px-5 items-center">
-        <h4 className="w-full font-medium text-center text-3xl mb-5">Lobby</h4>
+        <h4 className="title">LOBBY</h4>
         {allRooms.map((room) => {
-          return (
-            <div key={room.roomId}>
-              name: {room.metadata.roomName} clients: {room.clients} maxClients:{" "}
-              {room.maxClients}
-              <button
-                className="primary-button"
-                onClick={() => clickRoomEnter(room.roomId)}
-              >
-                입장
-              </button>
-            </div>
-          );
+          return <RoomItem key={room.roomId} room={room} />;
         })}
-        <Link to="/create-room" className="text-blue-500 hover:underline">
-          Go to CreateRoom
+        <Link to="/create-room" className="text-blue-500 hover:underline mt-8">
+          Go to CreateRoom →
         </Link>
       </div>
     </div>

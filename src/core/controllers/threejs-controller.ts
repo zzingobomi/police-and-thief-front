@@ -77,13 +77,14 @@ export class ThreeJSController extends Component {
     this._scene.add(shadowLight);
     this._scene.add(shadowLight.target);
 
+    // TODO: shadow map 크기 helper 로 확인하기
     shadowLight.castShadow = true;
     shadowLight.shadow.mapSize.width = 2048;
     shadowLight.shadow.mapSize.height = 2048;
     shadowLight.shadow.camera.top = shadowLight.shadow.camera.right = 1500;
     shadowLight.shadow.camera.bottom = shadowLight.shadow.camera.left = -1500;
     shadowLight.shadow.camera.near = 50;
-    shadowLight.shadow.camera.far = 1200;
+    shadowLight.shadow.camera.far = 5000;
     shadowLight.shadow.radius = 10;
     const shadowCameraHelper = new THREE.CameraHelper(
       shadowLight.shadow.camera
