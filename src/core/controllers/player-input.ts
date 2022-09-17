@@ -31,7 +31,6 @@ export class BasicCharacterControllerInput extends Component {
     document.addEventListener("keyup", (event) => this._onKeyUp(event));
     document.addEventListener("mousedown", () => {
       document.body.requestPointerLock();
-      // TODO: 처음에 시작할때 rotation.set(0, 0, 0)
     });
     document.addEventListener("mousemove", (event) => this._onMouseMove(event));
   }

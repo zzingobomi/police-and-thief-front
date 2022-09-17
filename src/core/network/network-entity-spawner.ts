@@ -1,6 +1,8 @@
 import { Component } from "../component";
-import { NPC_PLAYER } from "../constant";
+import { SpatialHashGrid } from "../components/spatial-hash-grid";
+import { HASH_GRID, NPC_PLAYER, SPATIAL_HASH_GRID } from "../constant";
 import { NpcController } from "../controllers/npc-entity";
+import { SpatialGridController } from "../controllers/spatial-grid-controller";
 import { Entity } from "../entity";
 
 export class NetworkEntitySpawner extends Component {
@@ -11,7 +13,12 @@ export class NetworkEntitySpawner extends Component {
   public Spawn() {
     const npc = new Entity();
     npc.AddComponent(new NpcController());
-    //npc.AddComponent(new NetworkEntityController());
+
+    const grid = this.FindEntity(HASH_GRID)?.GetComponent(
+      SPATIAL_HASH_GRID
+    ) as SpatialHashGrid;
+    npc.AddComponent(new SpatialGridController(grid));
+
     this._parent?.GetManager()?.AddEntity(npc, NPC_PLAYER);
 
     return npc;

@@ -31,7 +31,8 @@ export class ThreeJSController extends Component {
 
     this._setupCamera();
     this._setupLight();
-    this._setupControls();
+    this._setupBackground();
+    //this._setupControls();
   }
 
   public GetContainer(): HTMLDivElement {
@@ -52,7 +53,7 @@ export class ThreeJSController extends Component {
       60,
       window.innerWidth / window.innerHeight,
       1,
-      5000
+      8000
     );
 
     camera.position.set(0, 100, 500);
@@ -90,12 +91,23 @@ export class ThreeJSController extends Component {
     //this._scene.add(shadowCameraHelper);
   }
 
-  private _setupControls() {
-    this._controls = new OrbitControls(this._camera, this._divContainer);
-    this._controls.target.set(0, 100, 0);
-    this._controls.enablePan = true;
-    this._controls.enableDamping = false;
+  private _setupBackground() {
+    const loader = new THREE.TextureLoader();
+    loader.load("./data/clarens_midday_4k.jpeg", (texture) => {
+      const renderTarget = new THREE.WebGLCubeRenderTarget(
+        texture.image.height
+      );
+      renderTarget.fromEquirectangularTexture(this._renderer, texture);
+      this._scene.background = renderTarget.texture;
+    });
   }
+
+  // private _setupControls() {
+  //   this._controls = new OrbitControls(this._camera, this._divContainer);
+  //   this._controls.target.set(0, 100, 0);
+  //   this._controls.enablePan = true;
+  //   this._controls.enableDamping = false;
+  // }
 
   update(time: number) {
     this._controls.update();

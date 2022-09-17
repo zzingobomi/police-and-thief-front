@@ -43,6 +43,9 @@ export class NpcController extends Component {
     this._loadModel();
   }
 
+  public GetPosition() {
+    return this._target?.position;
+  }
   public SetPosition(position: IVec3) {
     this._target?.position.set(position.x, position.y, position.z);
   }
@@ -77,8 +80,6 @@ export class NpcController extends Component {
         }
       });
 
-      octree.AddModel(model);
-
       const animationClips = glb.animations;
       this._mixer = new THREE.AnimationMixer(this._target);
       animationClips.forEach((clip) => {
@@ -112,6 +113,9 @@ export class NpcController extends Component {
     }
   }
 
+  public GetInitialPosition() {
+    return this._initialPosition;
+  }
   public SetInitialPosition(position: IVec3) {
     this._initialPosition = position;
   }

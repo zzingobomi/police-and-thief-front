@@ -191,3 +191,48 @@ export class RunState extends State {
     this._parent.SetState(STATE.IDLE);
   }
 }
+
+// TODO: Jump, punch, dance
+export class JumpState extends State {
+  constructor(parent: FiniteStateMachine) {
+    super(parent);
+  }
+
+  get Name() {
+    return STATE.JUMP;
+  }
+
+  Enter(prevState: State) {
+    const jumpAction = (this._parent as CharacterFSM).GetAnimation(STATE.JUMP);
+    if (prevState) {
+      const prevAction = (this._parent as CharacterFSM).GetAnimation(
+        prevState.Name
+      );
+      // idleAction.time = 0.0;
+      // idleAction.enabled = true;
+      // idleAction.setEffectiveTimeScale(1.0);
+      // idleAction.setEffectiveWeight(1.0);
+      // idleAction.crossFadeFrom(prevAction, 0.25, true);
+      // idleAction.play();
+    } else {
+      jumpAction.play();
+    }
+  }
+
+  Exit() {}
+
+  Update(time: number, input?: BasicCharacterControllerInput) {
+    if (!input) {
+      return;
+    }
+
+    if (
+      input.Keys.forward ||
+      input.Keys.backward ||
+      input.Keys.left ||
+      input.Keys.right
+    ) {
+      this._parent.SetState(STATE.WALK);
+    }
+  }
+}

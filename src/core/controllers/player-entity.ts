@@ -4,6 +4,8 @@ import {
   BASIC_CHARACTER_CONTROLLER_INPUT,
   OCTREE,
   OCTREE_CONTROLLER,
+  SPATIAL_GRID_CONTROLLER,
+  SPATIAL_HASH_GRID,
   THREEJS,
   THREEJS_CONTROLLER,
 } from "../constant";
@@ -19,11 +21,14 @@ import {
   PerspectiveCamera,
   Vector3,
 } from "three";
-import { STATE } from "../utils/player-state";
+import { State, STATE } from "../utils/player-state";
 import { BasicCharacterControllerInput } from "./player-input";
 import { IPlayerData, IVec3 } from "../interface/player-data";
 import * as Colyseus from "colyseus.js";
 import { ColyseusStore } from "../../store";
+import PubSub from "pubsub-js";
+import { SignalType } from "../signal-type";
+import { SpatialGridController } from "./spatial-grid-controller";
 
 // TODO: 떨어질때 점점 빨라지도록..
 const GRAVITY = 300;
@@ -41,18 +46,22 @@ export class BasicCharacterController extends Component {
   private _mixer: AnimationMixer | null;
 
   private _stateMachine: CharacterFSM | null;
+  private _prevState: State | null;
+
+  private _input: BasicCharacterControllerInput | null;
+  private _octree: OctreeController | null;
 
   //private _speed = 0;
   //private _maxSpeed = 0;
   //private _acceleration = 0;
 
-  private _velocity = new THREE.Vector3(0, 0, 0);
-  private _acceleration = new THREE.Vector3(1, 0.125, 300.0);
-  private _decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
+  //private _velocity = new THREE.Vector3(0, 0, 0);
+  //private _acceleration = new THREE.Vector3(1, 0.125, 300.0);
+  //private _decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
 
   private _bOnTheGround = false;
-  private _fallingAcceleration = 0;
-  private _fallingSpeed = 0;
+  //private _fallingAcceleration = 0;
+  //private _fallingSpeed = 0;
 
   private _previousDirectionOffset = 0;
 
@@ -62,10 +71,10 @@ export class BasicCharacterController extends Component {
   // TODO: 다른방법 생각해보기..
   private _initialPosition: IVec3 | null;
 
-  private _socket: Colyseus.Room | null;
-
   private _camera: PerspectiveCamera | null;
   private _playerVelocity = new THREE.Vector3();
+
+  private _gridController: SpatialGridController | null;
 
   constructor() {
     super();
@@ -74,15 +83,19 @@ export class BasicCharacterController extends Component {
     this._animations = {};
     this._mixer = null;
     this._stateMachine = null;
+    this._prevState = null;
+
+    this._input = null;
+    this._octree = null;
 
     this._capsule = null;
     this._boxHelper = null;
 
     this._initialPosition = null;
 
-    this._socket = ColyseusStore.getInstance().GetRoom();
-
     this._camera = null;
+
+    this._gridController = null;
   }
 
   public InitComponent(): void {
@@ -91,7 +104,16 @@ export class BasicCharacterController extends Component {
         THREEJS_CONTROLLER
       ) as ThreeJSController
     ).GetCamera();
+    this._input = this.GetComponent(
+      BASIC_CHARACTER_CONTROLLER_INPUT
+    ) as BasicCharacterControllerInput;
+    this._octree = this.FindEntity(OCTREE)?.GetComponent(
+      OCTREE_CONTROLLER
+    ) as OctreeController;
     this._loadModel();
+    this._gridController = this._parent?.GetComponent(
+      SPATIAL_GRID_CONTROLLER
+    ) as SpatialGridController;
   }
 
   public Update(time: number): void {
@@ -99,34 +121,33 @@ export class BasicCharacterController extends Component {
       return;
     }
 
-    // TODO: Update에서 얻지 말고 최적화 하기
-    const input = this.GetComponent(
-      BASIC_CHARACTER_CONTROLLER_INPUT
-    ) as BasicCharacterControllerInput;
+    const input = this._input;
+    const octree = this._octree;
+    if (!input || !octree) return;
 
-    const octree = this.FindEntity(OCTREE)?.GetComponent(
-      OCTREE_CONTROLLER
-    ) as OctreeController;
     this._stateMachine.Update(time, input);
     if (this._mixer) {
       this._mixer.update(time);
     }
     const currentState = this._stateMachine.GetCurrentState();
-    if (!currentState) {
-      return;
+    if (!currentState) return;
+    if (this._prevState !== currentState) {
+      PubSub.publish(SignalType.UPDATE_STATE, currentState.Name);
     }
+    this._prevState = currentState;
+
     if (!this._target || !this._capsule || !this._camera) {
       return;
     }
 
     // gives a bit of air control
-    let speedDelta = time * (this._bOnTheGround ? 500 : 80);
+    let speedDelta = time * (this._bOnTheGround ? 2000 : 80);
     const forwardVector = this.getForwardVector();
     const sideVector = this.getSideVector();
     if (!forwardVector || !sideVector) return;
 
     if (input.Keys.shift) {
-      speedDelta *= 2;
+      speedDelta *= 5;
     }
     if (input.Keys.forward) {
       this._playerVelocity.add(forwardVector.multiplyScalar(speedDelta));
@@ -156,7 +177,16 @@ export class BasicCharacterController extends Component {
 
     this._playerVelocity.addScaledVector(this._playerVelocity, damping);
 
+    const oldPosition = this._target.position.clone();
     const deltaPosition = this._playerVelocity.clone().multiplyScalar(time);
+
+    // TODO: 캐릭터 충돌 처리
+    // const collisions = this.findIntersections(deltaPosition, oldPosition);
+    // if (collisions && collisions.length > 0) {
+    //   console.log("yy");
+    //   return;
+    // }
+
     this._capsule.translate(deltaPosition);
 
     const result = octree.CapsuleIntersect(this._capsule);
@@ -181,29 +211,13 @@ export class BasicCharacterController extends Component {
       this._capsule.start.z
     );
 
-    // position world update 보내기
     this._camera.position.copy(this._capsule.end);
 
-    // TODO: 뭔가가 바뀌었을때만 보내야 할거 같긴한데.. 최적화 필요..
-    // const playerInfo: IPlayerData = {
-    //   position: {
-    //     x: this._target?.position.x,
-    //     y: this._target?.position.y,
-    //     z: this._target?.position.z,
-    //   },
-    //   rotation: {
-    //     x: this._target?.rotation.x,
-    //     y: this._target?.rotation.y,
-    //     z: this._target?.rotation.z,
-    //   },
-    //   scale: {
-    //     x: this._target?.scale.x,
-    //     y: this._target?.scale.y,
-    //     z: this._target?.scale.z,
-    //   },
-    //   currentState: currentState.Name,
-    // };
-    // this._socket?.send("world.update", playerInfo);
+    PubSub.publish(SignalType.UPDATE_POSITION, {
+      x: this._target.position.x,
+      y: this._target.position.y,
+      z: this._target.position.z,
+    });
 
     /*
     const velocity = this._velocity;
@@ -424,6 +438,41 @@ export class BasicCharacterController extends Component {
     return playerDirection;
   }
 
+  private findIntersections(pos: any, oldPos: any) {
+    const grid = this._gridController;
+    if (!grid) return;
+
+    const nearby = grid.FindNearbyEntities(1000);
+    const collisions = [];
+
+    for (let i = 0; i < nearby.length; ++i) {
+      const e = nearby[i].entity;
+
+      if (!e.GetPosition()) continue;
+
+      const d =
+        ((pos.x - e.GetPosition().x) ** 2 + (pos.z - e.GetPosition().z) ** 2) **
+        0.5;
+
+      // HARDCODED
+      if (d <= 100) {
+        const d2 =
+          ((oldPos.x - e.GetPosition().x) ** 2 +
+            (oldPos.z - e.GetPosition().z) ** 2) **
+          0.5;
+
+        // If they're already colliding, let them get untangled.
+        if (d2 <= 100) {
+          continue;
+        } else {
+          collisions.push(nearby[i].entity);
+        }
+      }
+    }
+    return collisions;
+  }
+
+  /*
   private _directionOffset(input: BasicCharacterControllerInput) {
     let directionOffset = 0; // w
 
@@ -453,6 +502,7 @@ export class BasicCharacterController extends Component {
 
     return directionOffset;
   }
+  */
 
   private async _loadModel() {
     const glb = await this._loader.loadAsync("./data/Police_01.glb");
@@ -475,8 +525,6 @@ export class BasicCharacterController extends Component {
         child.castShadow = true;
       }
     });
-
-    octree.AddModel(model);
 
     const animationClips = glb.animations;
     this._mixer = new THREE.AnimationMixer(this._target);
@@ -504,6 +552,8 @@ export class BasicCharacterController extends Component {
     const height = box.max.y - box.min.y;
     const diameter = box.max.z - box.min.z;
 
+    console.log(height, diameter);
+
     this._capsule = new Capsule(
       new THREE.Vector3(
         this._initialPosition.x,
@@ -517,62 +567,11 @@ export class BasicCharacterController extends Component {
       ),
       diameter / 2
     );
-
-    /*
-    this._loader.load("./data/Police_01.glb", (glb) => {
-      const model = glb.scene;
-      const octree = this.FindEntity(OCTREE)?.GetComponent(
-        OCTREE_CONTROLLER
-      ) as OctreeController;
-      const threejs = this.FindEntity(THREEJS)?.GetComponent(
-        THREEJS_CONTROLLER
-      ) as ThreeJSController;
-      const scene = threejs.GetScene();
-
-      scene.add(model);
-
-      this._target = glb.scene;
-
-      model.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.castShadow = true;
-        }
-      });
-
-      octree.AddModel(model);
-
-      const animationClips = glb.animations;
-      this._mixer = new THREE.AnimationMixer(this._target);
-      animationClips.forEach((clip) => {
-        const name = clip.name;
-        //console.log(name);
-        if (this._mixer) this._animations[name] = this._mixer.clipAction(clip);
-      });
-
-      this._stateMachine = new CharacterFSM(this._animations);
-      this._stateMachine.SetState(STATE.IDLE);
-
-      // 캐릭터 모델의 boundingbox 구하기
-      const box = new THREE.Box3().setFromObject(model);
-      model.position.y = (box.max.y - box.min.y) / 2;
-
-      const height = box.max.y - box.min.y;
-      const diameter = box.max.z - box.min.z;
-
-      this._capsule = new Capsule(
-        new THREE.Vector3(0, diameter / 2, 0),
-        new THREE.Vector3(0, height - diameter / 2, 0),
-        diameter / 2
-      );
-
-      // model의 바운딩 helper
-      // const boxHelper = new THREE.BoxHelper(model);
-      // scene.add(boxHelper);
-      // this._boxHelper = boxHelper;
-    });
-    */
   }
 
+  public GetInitialPosition() {
+    return this._initialPosition;
+  }
   public SetInitialPosition(position: IVec3) {
     this._initialPosition = position;
   }

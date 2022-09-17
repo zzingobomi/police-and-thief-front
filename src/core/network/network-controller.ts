@@ -6,6 +6,7 @@ import {
   NETWORK_ENTITY_SPAWNER,
   NPC_CONTROLLER,
   PLAYER_SPAWNER,
+  SPATIAL_GRID_CONTROLLER,
   SPAWNER,
 } from "../constant";
 import { PlayerSpawner } from "./player-spawner";
@@ -15,6 +16,7 @@ import { SignalType } from "../signal-type";
 import { NpcController } from "../controllers/npc-entity";
 import { IVec3 } from "../interface/player-data";
 import { BasicCharacterController } from "../controllers/player-entity";
+import { SpatialGridController } from "../controllers/spatial-grid-controller";
 
 export class NetworkController extends Component {
   private _socket: Colyseus.Room | null;
@@ -47,7 +49,11 @@ export class NetworkController extends Component {
     const myController = myPlayer.GetComponent(
       BASIC_CHARACTER_CONTROLLER
     ) as BasicCharacterController;
+    const gridController = myPlayer.GetComponent(
+      SPATIAL_GRID_CONTROLLER
+    ) as SpatialGridController;
     myController.SetInitialPosition(initialPosition);
+    gridController.CreateNewClient();
   }
 
   private npcSpawner(player: any) {
@@ -63,9 +69,12 @@ export class NetworkController extends Component {
     const npcController = npcPlayer.GetComponent(
       NPC_CONTROLLER
     ) as NpcController;
+    const gridController = npcPlayer.GetComponent(
+      SPATIAL_GRID_CONTROLLER
+    ) as SpatialGridController;
     npcController.SetInitialPosition(initialPosition);
+    gridController.CreateNewClient();
 
-    // TODO: 왜 뚫고 지나가지?
     player.onChange = (changes: any) => {
       changes.forEach((change: any) => {
         if (change.field === "currentState") {
@@ -74,6 +83,11 @@ export class NetworkController extends Component {
       });
     };
     player.position.onChange = (changes: any) => {
+      PubSub.publish(SignalType.NPC_UPDATE_POSITION, {
+        x: player.position.x,
+        y: player.position.y,
+        z: player.position.z,
+      });
       npcController.SetPosition({
         x: player.position.x,
         y: player.position.y,

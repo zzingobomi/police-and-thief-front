@@ -5,6 +5,7 @@ import { Entity } from "./entity";
 import { EntityManager } from "./entity-manager";
 import { PerspectiveCamera, Scene, WebGLRenderer } from "three";
 import {
+  HASH_GRID,
   NETWORK,
   NETWORK_CONTROLLER,
   OCTREE,
@@ -19,6 +20,8 @@ import { BasicCharacterControllerInput } from "./controllers/player-input";
 import { PlayerSpawner } from "./network/player-spawner";
 import { NetworkEntitySpawner } from "./network/network-entity-spawner";
 import { NetworkController } from "./network/network-controller";
+import { SpatialHashGrid } from "./components/spatial-hash-grid";
+import { SpatialGridController } from "./controllers/spatial-grid-controller";
 
 // TODO: singleton 적용
 export class GameMain {
@@ -62,6 +65,18 @@ export class GameMain {
     spawner.AddComponent(new PlayerSpawner());
     spawner.AddComponent(new NetworkEntitySpawner());
     this._entityManager.AddEntity(spawner, SPAWNER);
+
+    const hashGrid = new Entity();
+    hashGrid.AddComponent(
+      new SpatialHashGrid(
+        [
+          [-1000, -1000],
+          [1000, 1000],
+        ],
+        [100, 100]
+      )
+    );
+    this._entityManager.AddEntity(hashGrid, HASH_GRID);
   }
 
   private _loadSpace() {

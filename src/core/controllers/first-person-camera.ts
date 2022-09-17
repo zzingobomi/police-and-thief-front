@@ -4,8 +4,8 @@ import { SignalType } from "../signal-type";
 import { PerspectiveCamera } from "three";
 import { THREEJS, THREEJS_CONTROLLER } from "../constant";
 import { ThreeJSController } from "./threejs-controller";
+import * as THREE from "three";
 
-// TODO: examples/fames_fps.html, OctreeHelper
 export class FirstPersonCamera extends Component {
   private _camera: PerspectiveCamera | null;
 
@@ -29,6 +29,10 @@ export class FirstPersonCamera extends Component {
     this._camera.rotation.y -= event.movementX / 500;
     this._camera.rotation.x -= event.movementY / 500;
 
-    // TOOD: rotation world.update
+    PubSub.publish(SignalType.UPDATE_ROTATION, {
+      x: 0,
+      y: this._camera.rotation.y - Math.PI,
+      z: 0,
+    });
   }
 }

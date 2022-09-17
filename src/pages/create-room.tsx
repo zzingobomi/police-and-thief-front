@@ -24,7 +24,6 @@ export const CreateRoom = () => {
   // TODO: 방 이름 조절하기
   const onSubmit = async () => {
     const { roomName, maxClient } = getValues();
-    console.log(roomName, maxClient);
     const room = await client?.create(COLYSEUS_ROOM_NAME, {
       roomName,
       maxClient,
