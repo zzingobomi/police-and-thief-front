@@ -25,7 +25,8 @@ export const RoomItem = ({ room }: IRoomItemProps) => {
   return (
     <div
       key={room.roomId}
-      className="max-w-lg w-full lg:max-w-full flex justify-between items-center bg-indigo-50 rounded-md shadow-lg p-5 m-3"
+      className="max-w-lg w-full lg:max-w-full flex justify-between items-center bg-white rounded-md 
+      hover:bg-indigo-50 hover:shadow-md group ring-1 ring-gray-200 p-5 m-3"
     >
       <div>
         <span className="text-3xl font-medium">{room.metadata.roomName}</span>

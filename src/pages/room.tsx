@@ -39,6 +39,25 @@ export const Room = () => {
       </Helmet>
       <div className="w-full max-w-screen-sm flex flex-col px-5 items-center">
         <h4 className="title">ROOM</h4>
+
+        {/* <div className="ring-1 ring-gray-100 rounded-lg shadow-lg divide-y divide-slate-100">
+          <div className="py-4 px-6 text-sm font-medium">
+            <div className="block px-3 py-2 rounded-md">Users</div>
+          </div>
+
+          <ul className="divide-y divide-slate-100">
+            <article className="flex items-start space-x-6 p-6">
+              <div className="min-w-0 relative flex-auto">ttt</div>
+            </article>
+            <article className="flex items-start space-x-6 p-6">
+              <div className="min-w-0 relative flex-auto">rrr</div>
+            </article>
+            <article className="flex items-start space-x-6 p-6">
+              <div className="min-w-0 relative flex-auto">sss</div>
+            </article>
+          </ul>
+        </div> */}
+
         <div>
           {clients.map((client) => {
             return <div key={client}>{client}</div>;
