@@ -21,6 +21,8 @@ export class StaticModelComponent extends Component {
     this._loadModel();
   }
 
+  // TODO: 캐릭터 모델링 없애기
+  // texture 어색한부분 수정
   private _loadModel() {
     this._loader.load("./data/jail.glb", (glb) => {
       const model = glb.scene;

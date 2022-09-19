@@ -30,9 +30,6 @@ import PubSub from "pubsub-js";
 import { SignalType } from "../signal-type";
 import { SpatialGridController } from "./spatial-grid-controller";
 
-// TODO: 떨어질때 점점 빨라지도록..
-const GRAVITY = 300;
-
 export class AnimationMap {
   [key: string]: AnimationAction;
 }
@@ -60,8 +57,8 @@ export class BasicCharacterController extends Component {
   //private _decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
 
   private _bOnTheGround = false;
-  //private _fallingAcceleration = 0;
-  //private _fallingSpeed = 0;
+  private _fallingAcceleration = 0;
+  private _fallingSpeed = 0;
 
   private _previousDirectionOffset = 0;
 
@@ -141,13 +138,13 @@ export class BasicCharacterController extends Component {
     }
 
     // gives a bit of air control
-    let speedDelta = time * (this._bOnTheGround ? 2000 : 80);
+    let speedDelta = time * (this._bOnTheGround ? 2000 : 1000);
     const forwardVector = this.getForwardVector();
     const sideVector = this.getSideVector();
     if (!forwardVector || !sideVector) return;
 
     if (input.Keys.shift) {
-      speedDelta *= 5;
+      speedDelta *= 1.5;
     }
     if (input.Keys.forward) {
       this._playerVelocity.add(forwardVector.multiplyScalar(speedDelta));
@@ -163,29 +160,37 @@ export class BasicCharacterController extends Component {
     }
     if (this._bOnTheGround) {
       if (input.Keys.space) {
-        this._playerVelocity.y = 300;
+        this._playerVelocity.y = 500;
       }
     }
 
     let damping = Math.exp(-4 * time) - 1;
     if (!this._bOnTheGround) {
-      this._playerVelocity.y -= GRAVITY * time;
+      this._fallingAcceleration += 1;
+      this._fallingSpeed += Math.pow(this._fallingAcceleration, 2);
+
+      this._playerVelocity.y -= this._fallingSpeed * time;
 
       // small air resistance
       damping *= 0.1;
+    } else {
+      this._fallingAcceleration = 0;
+      this._fallingSpeed = 0;
     }
 
     this._playerVelocity.addScaledVector(this._playerVelocity, damping);
 
-    const oldPosition = this._target.position.clone();
     const deltaPosition = this._playerVelocity.clone().multiplyScalar(time);
 
-    // TODO: 캐릭터 충돌 처리
-    // const collisions = this.findIntersections(deltaPosition, oldPosition);
-    // if (collisions && collisions.length > 0) {
-    //   console.log("yy");
-    //   return;
-    // }
+    // 캐릭터 충돌 처리
+    const oldPosition = this._target.position.clone();
+    const pos = this._target.position.clone();
+    pos.add(deltaPosition);
+
+    const collisions = this.findIntersections(pos, oldPosition);
+    if (collisions && collisions.length > 0) {
+      return;
+    }
 
     this._capsule.translate(deltaPosition);
 
@@ -307,8 +312,7 @@ export class BasicCharacterController extends Component {
       this._capsule.start.y - this._capsule.radius + capsuleHeight / 2,
       this._capsule.start.z
     );    
-
-    // TODO: 뭔가가 바뀌었을때만 보내야 할거 같긴한데.. 최적화 필요..
+    
     const playerInfo: IPlayerData = {
       position: {
         x: this._target?.position.x,
@@ -407,7 +411,6 @@ export class BasicCharacterController extends Component {
     //camera.position.x -= previousPosition.x - this._target.position.x;
     //camera.position.z -= previousPosition.z - this._target.position.z;
 
-    // TODO: 여기서 move update?
     // if (this._boxHelper) {
     //   this._boxHelper.update();
     // }
@@ -438,11 +441,11 @@ export class BasicCharacterController extends Component {
     return playerDirection;
   }
 
-  private findIntersections(pos: any, oldPos: any) {
+  private findIntersections(pos: THREE.Vector3, oldPos: THREE.Vector3) {
     const grid = this._gridController;
     if (!grid) return;
 
-    const nearby = grid.FindNearbyEntities(1000);
+    const nearby = grid.FindNearbyEntities(500);
     const collisions = [];
 
     for (let i = 0; i < nearby.length; ++i) {
@@ -454,15 +457,13 @@ export class BasicCharacterController extends Component {
         ((pos.x - e.GetPosition().x) ** 2 + (pos.z - e.GetPosition().z) ** 2) **
         0.5;
 
-      // HARDCODED
-      if (d <= 100) {
+      if (d <= 50) {
         const d2 =
           ((oldPos.x - e.GetPosition().x) ** 2 +
             (oldPos.z - e.GetPosition().z) ** 2) **
           0.5;
 
-        // If they're already colliding, let them get untangled.
-        if (d2 <= 100) {
+        if (d2 <= 50) {
           continue;
         } else {
           collisions.push(nearby[i].entity);
@@ -551,8 +552,6 @@ export class BasicCharacterController extends Component {
 
     const height = box.max.y - box.min.y;
     const diameter = box.max.z - box.min.z;
-
-    console.log(height, diameter);
 
     this._capsule = new Capsule(
       new THREE.Vector3(
