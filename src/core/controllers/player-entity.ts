@@ -67,6 +67,7 @@ export class BasicCharacterController extends Component {
 
   // TODO: 다른방법 생각해보기..
   private _initialPosition: IVec3 | null;
+  private _initialRotation: IVec3 | null;
 
   private _camera: PerspectiveCamera | null;
   private _playerVelocity = new THREE.Vector3();
@@ -89,6 +90,7 @@ export class BasicCharacterController extends Component {
     this._boxHelper = null;
 
     this._initialPosition = null;
+    this._initialRotation = null;
 
     this._camera = null;
 
@@ -538,12 +540,17 @@ export class BasicCharacterController extends Component {
     this._stateMachine = new CharacterFSM(this._animations);
     this._stateMachine.SetState(STATE.IDLE);
 
-    if (!this._initialPosition) return;
+    if (!this._initialPosition || !this._initialRotation) return;
 
     this._target.position.set(
       this._initialPosition.x,
       this._initialPosition.y,
       this._initialPosition.z
+    );
+    this._target.rotation.set(
+      this._initialRotation.x,
+      this._initialRotation.y,
+      this._initialRotation.z
     );
 
     // 캐릭터 모델의 boundingbox 구하기
@@ -556,16 +563,25 @@ export class BasicCharacterController extends Component {
     this._capsule = new Capsule(
       new THREE.Vector3(
         this._initialPosition.x,
-        diameter / 2,
+        diameter / 2 + this._initialPosition.y,
         this._initialPosition.z
       ),
       new THREE.Vector3(
         this._initialPosition.x,
-        height - diameter / 2,
+        height - diameter / 2 + this._initialPosition.y,
         this._initialPosition.z
       ),
       diameter / 2
     );
+
+    if (this._camera) {
+      this._camera.position.copy(this._capsule.end);
+      this._camera.rotation.set(
+        this._initialRotation.x,
+        this._initialRotation.y + Math.PI,
+        this._initialRotation.z
+      );
+    }
   }
 
   public GetInitialPosition() {
@@ -573,6 +589,12 @@ export class BasicCharacterController extends Component {
   }
   public SetInitialPosition(position: IVec3) {
     this._initialPosition = position;
+  }
+  public GetInitialRotation() {
+    return this._initialRotation;
+  }
+  public SetInitialRotation(rotation: IVec3) {
+    this._initialRotation = rotation;
   }
 
   public GetPosition() {

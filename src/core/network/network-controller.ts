@@ -45,6 +45,11 @@ export class NetworkController extends Component {
       y: player.position.y,
       z: player.position.z,
     };
+    const initialRotation: IVec3 = {
+      x: player.rotation.x,
+      y: player.rotation.y,
+      z: player.rotation.z,
+    };
     const myPlayer = spawner.Spawn();
     const myController = myPlayer.GetComponent(
       BASIC_CHARACTER_CONTROLLER
@@ -53,6 +58,7 @@ export class NetworkController extends Component {
       SPATIAL_GRID_CONTROLLER
     ) as SpatialGridController;
     myController.SetInitialPosition(initialPosition);
+    myController.SetInitialRotation(initialRotation);
     gridController.CreateNewClient();
   }
 
@@ -65,6 +71,11 @@ export class NetworkController extends Component {
       y: player.position.y,
       z: player.position.z,
     };
+    const initialRotation: IVec3 = {
+      x: player.rotation.x,
+      y: player.rotation.y,
+      z: player.rotation.z,
+    };
     const npcPlayer = npcSpawner.Spawn();
     const npcController = npcPlayer.GetComponent(
       NPC_CONTROLLER
@@ -73,6 +84,7 @@ export class NetworkController extends Component {
       SPATIAL_GRID_CONTROLLER
     ) as SpatialGridController;
     npcController.SetInitialPosition(initialPosition);
+    npcController.SetInitialRotation(initialRotation);
     gridController.CreateNewClient();
 
     player.onChange = (changes: any) => {
@@ -95,6 +107,11 @@ export class NetworkController extends Component {
       });
     };
     player.rotation.onChange = (changes: any) => {
+      console.log(
+        player.rotation.x.toFixed(0),
+        player.rotation.y.toFixed(0),
+        player.rotation.z.toFixed(0)
+      );
       npcController.SetRotation({
         x: player.rotation.x,
         y: player.rotation.y,

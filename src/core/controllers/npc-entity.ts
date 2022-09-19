@@ -27,6 +27,7 @@ export class NpcController extends Component {
 
   // TODO: 다른방법 생각해보기..
   private _initialPosition: IVec3 | null;
+  private _initialRotation: IVec3 | null;
 
   constructor() {
     super();
@@ -37,6 +38,7 @@ export class NpcController extends Component {
     this._stateMachine = null;
 
     this._initialPosition = null;
+    this._initialRotation = null;
   }
 
   public InitComponent(): void {
@@ -91,13 +93,18 @@ export class NpcController extends Component {
       this._stateMachine = new CharacterFSM(this._animations);
       this._stateMachine.SetState(STATE.IDLE);
 
-      if (this._initialPosition) {
-        this._target.position.set(
-          this._initialPosition.x,
-          this._initialPosition.y,
-          this._initialPosition.z
-        );
-      }
+      if (!this._initialPosition || !this._initialRotation) return;
+
+      this._target.position.set(
+        this._initialPosition.x,
+        this._initialPosition.y,
+        this._initialPosition.z
+      );
+      this._target.rotation.set(
+        this._initialRotation.x,
+        this._initialRotation.y,
+        this._initialRotation.z
+      );
     });
   }
 
@@ -118,5 +125,11 @@ export class NpcController extends Component {
   }
   public SetInitialPosition(position: IVec3) {
     this._initialPosition = position;
+  }
+  public GetInitialRotation() {
+    return this._initialRotation;
+  }
+  public SetInitialRotation(rotation: IVec3) {
+    this._initialRotation = rotation;
   }
 }

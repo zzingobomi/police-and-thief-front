@@ -9,6 +9,8 @@ export interface IKeyState {
   right: boolean;
   space: boolean;
   shift: boolean;
+  punch: boolean;
+  dance: boolean;
 }
 
 export class BasicCharacterControllerInput extends Component {
@@ -23,6 +25,8 @@ export class BasicCharacterControllerInput extends Component {
       right: false,
       space: false,
       shift: false,
+      punch: false,
+      dance: false,
     };
   }
 
@@ -69,6 +73,14 @@ export class BasicCharacterControllerInput extends Component {
       case "Shift":
         this._keys.shift = true;
         break;
+      case "f":
+      case "F":
+        this._keys.punch = true;
+        break;
+      case "h":
+      case "H":
+        this._keys.dance = true;
+        break;
     }
   }
 
@@ -95,6 +107,14 @@ export class BasicCharacterControllerInput extends Component {
         break;
       case "Shift":
         this._keys.shift = false;
+        break;
+      case "f":
+      case "F":
+        this._keys.punch = false;
+        break;
+      case "h":
+      case "H":
+        this._keys.dance = false;
         break;
     }
   }

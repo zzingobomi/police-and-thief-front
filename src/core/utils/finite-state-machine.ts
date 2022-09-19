@@ -9,8 +9,8 @@ class StateMap {
 }
 
 export class FiniteStateMachine {
-  private _states: StateMap;
-  private _currentState: State | null;
+  protected _states: StateMap;
+  protected _currentState: State | null;
 
   constructor() {
     this._states = {};
