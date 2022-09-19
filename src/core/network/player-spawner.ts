@@ -1,3 +1,4 @@
+import { PlayerType } from "../../pages/room";
 import { Component } from "../component";
 import { SpatialHashGrid } from "../components/spatial-hash-grid";
 import {
@@ -23,10 +24,10 @@ export class PlayerSpawner extends Component {
     super();
   }
 
-  public Spawn() {
+  public Spawn(playerType: PlayerType) {
     const player = new Entity();
     player.AddComponent(new BasicCharacterControllerInput());
-    player.AddComponent(new BasicCharacterController());
+    player.AddComponent(new BasicCharacterController(playerType));
     player.AddComponent(new NetworkEntityController());
     player.AddComponent(new FirstPersonCamera());
 

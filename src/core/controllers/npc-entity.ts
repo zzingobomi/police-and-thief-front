@@ -14,8 +14,10 @@ import { ThreeJSController } from "./threejs-controller";
 import * as THREE from "three";
 import { STATE } from "../utils/player-state";
 import { IVec3 } from "../interface/player-data";
+import { PlayerType } from "../../pages/room";
 
 export class NpcController extends Component {
+  private _playerType: PlayerType;
   private _target: Group | null;
 
   private _loader: GLTFLoader;
@@ -29,8 +31,9 @@ export class NpcController extends Component {
   private _initialPosition: IVec3 | null;
   private _initialRotation: IVec3 | null;
 
-  constructor() {
+  constructor(playerType: PlayerType) {
     super();
+    this._playerType = playerType;
     this._target = null;
     this._loader = new GLTFLoader();
     this._animations = {};
@@ -62,7 +65,11 @@ export class NpcController extends Component {
   }
 
   private _loadModel() {
-    this._loader.load("./data/Police_01.glb", (glb) => {
+    const glbPath =
+      this._playerType === PlayerType.POLICE
+        ? "./data/Police_01.glb"
+        : "./data/Thief_01.glb";
+    this._loader.load(glbPath, (glb) => {
       const model = glb.scene;
       const octree = this.FindEntity(OCTREE)?.GetComponent(
         OCTREE_CONTROLLER
@@ -90,7 +97,7 @@ export class NpcController extends Component {
         if (this._mixer) this._animations[name] = this._mixer.clipAction(clip);
       });
 
-      this._stateMachine = new CharacterFSM(this._animations);
+      this._stateMachine = new CharacterFSM(this._animations, this._playerType);
       this._stateMachine.SetState(STATE.IDLE);
 
       if (!this._initialPosition || !this._initialRotation) return;

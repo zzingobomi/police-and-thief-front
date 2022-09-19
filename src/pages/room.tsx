@@ -1,12 +1,25 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useHistory } from "react-router-dom";
+import { RoomUserList } from "../components/room-user-list";
 import { ColyseusStore } from "../store";
+
+export enum PlayerType {
+  POLICE = "Police",
+  THIEF = "Thief",
+}
+
+export interface IClientInfo {
+  playerType: string;
+  sessionId: string;
+  readyState: string;
+}
 
 export const Room = () => {
   const room = ColyseusStore.getInstance().GetRoom();
-  const [clients, setClients] = useState<string[]>([]);
+  const [clients, setClients] = useState<IClientInfo[]>([]);
   const history = useHistory();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (room) {
@@ -19,14 +32,30 @@ export const Room = () => {
       room.onMessage("messages", (message) => {
         //console.log(message);
       });
-      room.onMessage("joined", (clients) => {
+      room.onMessage("joined", (clients: IClientInfo[]) => {
         setClients(clients);
       });
-      room.onMessage("left", (clients) => {
+      room.onMessage("left", (clients: IClientInfo[]) => {
         setClients(clients);
+      });
+      room.onMessage("ready.update", (clients: IClientInfo[]) => {
+        setClients(clients);
+      });
+      room.onMessage("game.start", () => {
+        onGameStart();
       });
     }
   }, []);
+
+  const onGameCancelReady = () => {
+    room?.send("game.cancel.ready");
+    setReady(false);
+  };
+
+  const onGameReady = () => {
+    room?.send("game.ready");
+    setReady(true);
+  };
 
   const onGameStart = () => {
     history.push("/game");
@@ -37,34 +66,31 @@ export const Room = () => {
       <Helmet>
         <title>Room | Police {"&"} Thief</title>
       </Helmet>
-      <div className="w-full max-w-screen-sm flex flex-col px-5 items-center">
+      <div className="w-full max-w-screen-md flex flex-col px-5 items-center">
         <h4 className="title">ROOM</h4>
-
-        {/* <div className="ring-1 ring-gray-100 rounded-lg shadow-lg divide-y divide-slate-100">
-          <div className="py-4 px-6 text-sm font-medium">
-            <div className="block px-3 py-2 rounded-md">Users</div>
-          </div>
-
-          <ul className="divide-y divide-slate-100">
-            <article className="flex items-start space-x-6 p-6">
-              <div className="min-w-0 relative flex-auto">ttt</div>
-            </article>
-            <article className="flex items-start space-x-6 p-6">
-              <div className="min-w-0 relative flex-auto">rrr</div>
-            </article>
-            <article className="flex items-start space-x-6 p-6">
-              <div className="min-w-0 relative flex-auto">sss</div>
-            </article>
-          </ul>
-        </div> */}
-
-        <div>
-          {clients.map((client) => {
-            return <div key={client}>{client}</div>;
-          })}
+        <div className="w-full max-w-screen-md flex flex-row gap-4 mb-8">
+          <RoomUserList
+            name="Polices"
+            users={clients.filter(
+              (client) => client.playerType === PlayerType.POLICE
+            )}
+          />
+          <RoomUserList
+            name="Thiefs"
+            users={clients.filter(
+              (client) => client.playerType === PlayerType.THIEF
+            )}
+          />
         </div>
-        <button className="primary-button" onClick={onGameStart}>
-          Game Start
+        <button
+          className={` text-white font-bold py-2 px-4 rounded-full ${
+            ready
+              ? "bg-red-500 hover:bg-red-700"
+              : "bg-blue-500 hover:bg-blue-700"
+          }`}
+          onClick={ready ? onGameCancelReady : onGameReady}
+        >
+          {ready ? "Cancel Ready" : "Ready"}
         </button>
       </div>
     </div>

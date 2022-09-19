@@ -5,6 +5,7 @@ import {
 import { CharacterFSM } from "./character-fsm";
 import { FiniteStateMachine } from "./finite-state-machine";
 import * as THREE from "three";
+import { PlayerType } from "../../pages/room";
 
 export enum STATE {
   IDLE = "Idle",
@@ -13,6 +14,7 @@ export enum STATE {
   JUMP = "Jump",
   PUNCH = "Punch",
   SILLY_DANCE = "Silly_Dance",
+  CHICKEN_DANCE = "Chicken_Dance",
 }
 
 export class State {
@@ -70,7 +72,12 @@ export class IdleState extends State {
       this._parent.SetState(STATE.JUMP);
     }
     if (input.Keys.dance) {
-      this._parent.SetState(STATE.SILLY_DANCE);
+      const playerType = (this._parent as CharacterFSM).GetPlayerType();
+      this._parent.SetState(
+        playerType === PlayerType.POLICE
+          ? STATE.SILLY_DANCE
+          : STATE.CHICKEN_DANCE
+      );
     }
 
     if (
@@ -322,6 +329,63 @@ export class SillyDanceState extends State {
     }
 
     if (this.sillyDanceAction && !this.sillyDanceAction.isRunning()) {
+      this._parent.SetState(STATE.IDLE);
+    }
+  }
+}
+
+export class ChickenDanceState extends State {
+  private chickenDanceAction: THREE.AnimationAction | null;
+  constructor(parent: FiniteStateMachine) {
+    super(parent);
+    this.chickenDanceAction = null;
+  }
+
+  get Name() {
+    return STATE.CHICKEN_DANCE;
+  }
+
+  Enter(prevState: State) {
+    if (prevState.Name !== STATE.IDLE) return;
+    this.chickenDanceAction = (this._parent as CharacterFSM).GetAnimation(
+      STATE.CHICKEN_DANCE
+    );
+    if (prevState) {
+      const prevAction = (this._parent as CharacterFSM).GetAnimation(
+        prevState.Name
+      );
+      this.chickenDanceAction.time = 0.0;
+      this.chickenDanceAction.enabled = true;
+      this.chickenDanceAction.setEffectiveTimeScale(1.0);
+      this.chickenDanceAction.setEffectiveWeight(1.0);
+      this.chickenDanceAction.crossFadeFrom(prevAction, 0.25, true);
+      this.chickenDanceAction.setDuration(3);
+      this.chickenDanceAction.setLoop(THREE.LoopOnce, 1);
+      this.chickenDanceAction.play();
+    } else {
+      this.chickenDanceAction.setLoop(THREE.LoopOnce, 1);
+      this.chickenDanceAction.setDuration(3);
+      this.chickenDanceAction.play();
+    }
+  }
+
+  Exit() {}
+
+  Update(time: number, input?: BasicCharacterControllerInput) {
+    if (!input) {
+      return;
+    }
+
+    if (
+      input.Keys.forward ||
+      input.Keys.backward ||
+      input.Keys.left ||
+      input.Keys.right
+    ) {
+      this._parent.SetState(STATE.WALK);
+    }
+
+    if (this.chickenDanceAction && !this.chickenDanceAction.isRunning()) {
       this._parent.SetState(STATE.IDLE);
     }
   }

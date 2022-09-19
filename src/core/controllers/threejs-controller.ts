@@ -18,7 +18,7 @@ export class ThreeJSController extends Component {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
+    renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.VSMShadowMap;
     //renderer.shadowMap.type = THREE.PCFSoftShadowMap;

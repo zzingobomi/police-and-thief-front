@@ -29,12 +29,14 @@ import { ColyseusStore } from "../../store";
 import PubSub from "pubsub-js";
 import { SignalType } from "../signal-type";
 import { SpatialGridController } from "./spatial-grid-controller";
+import { PlayerType } from "../../pages/room";
 
 export class AnimationMap {
   [key: string]: AnimationAction;
 }
 
 export class BasicCharacterController extends Component {
+  private _playerType: PlayerType;
   private _target: Group | null;
 
   private _loader: GLTFLoader;
@@ -74,8 +76,9 @@ export class BasicCharacterController extends Component {
 
   private _gridController: SpatialGridController | null;
 
-  constructor() {
+  constructor(playerType: PlayerType) {
     super();
+    this._playerType = playerType;
     this._target = null;
     this._loader = new GLTFLoader();
     this._animations = {};
@@ -508,7 +511,11 @@ export class BasicCharacterController extends Component {
   */
 
   private async _loadModel() {
-    const glb = await this._loader.loadAsync("./data/Police_01.glb");
+    const glbPath =
+      this._playerType === PlayerType.POLICE
+        ? "./data/Police_01.glb"
+        : "./data/Thief_01.glb";
+    const glb = await this._loader.loadAsync(glbPath);
     const model = glb.scene;
     const octree = this.FindEntity(OCTREE)?.GetComponent(
       OCTREE_CONTROLLER
@@ -537,7 +544,7 @@ export class BasicCharacterController extends Component {
       if (this._mixer) this._animations[name] = this._mixer.clipAction(clip);
     });
 
-    this._stateMachine = new CharacterFSM(this._animations);
+    this._stateMachine = new CharacterFSM(this._animations, this._playerType);
     this._stateMachine.SetState(STATE.IDLE);
 
     if (!this._initialPosition || !this._initialRotation) return;

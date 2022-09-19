@@ -50,7 +50,7 @@ export class NetworkController extends Component {
       y: player.rotation.y,
       z: player.rotation.z,
     };
-    const myPlayer = spawner.Spawn();
+    const myPlayer = spawner.Spawn(player.playerType);
     const myController = myPlayer.GetComponent(
       BASIC_CHARACTER_CONTROLLER
     ) as BasicCharacterController;
@@ -76,7 +76,7 @@ export class NetworkController extends Component {
       y: player.rotation.y,
       z: player.rotation.z,
     };
-    const npcPlayer = npcSpawner.Spawn();
+    const npcPlayer = npcSpawner.Spawn(player.playerType);
     const npcController = npcPlayer.GetComponent(
       NPC_CONTROLLER
     ) as NpcController;
@@ -107,11 +107,6 @@ export class NetworkController extends Component {
       });
     };
     player.rotation.onChange = (changes: any) => {
-      console.log(
-        player.rotation.x.toFixed(0),
-        player.rotation.y.toFixed(0),
-        player.rotation.z.toFixed(0)
-      );
       npcController.SetRotation({
         x: player.rotation.x,
         y: player.rotation.y,
