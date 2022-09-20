@@ -2,6 +2,8 @@ import React, { useContext } from "react";
 import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
+import { Button } from "../components/button";
+import { FormError } from "../components/form-error";
 import { colyseusContext } from "../context";
 import { COLYSEUS_ROOM_NAME } from "../core/constant";
 import { ColyseusStore } from "../store";
@@ -14,7 +16,7 @@ interface ICreateRoomForm {
 export const CreateRoom = () => {
   const { client } = useContext(colyseusContext);
   const history = useHistory();
-  const { register, getValues, errors, handleSubmit } =
+  const { register, getValues, errors, handleSubmit, formState } =
     useForm<ICreateRoomForm>({
       mode: "onChange",
       defaultValues: {
@@ -52,24 +54,38 @@ export const CreateRoom = () => {
         >
           <input
             ref={register({
-              required: "Name is required",
+              required: "방이름은 필수 입력입니다.",
             })}
             name="roomName"
             required
             placeholder="RoomName"
             className="input"
           />
+          {errors.roomName?.message && (
+            <FormError errorMessage={errors.roomName?.message} />
+          )}
           <input
             ref={register({
               required: "maxClient is required",
+              min: 2,
+              max: 8,
             })}
             type="number"
             name="maxClient"
+            min={2}
+            max={8}
             required
             placeholder="Max"
             className="input"
           />
-          <button className="primary-button">Create Room</button>
+          {errors.maxClient?.message && (
+            <FormError errorMessage={errors.maxClient?.message} />
+          )}
+          <Button
+            canClick={formState.isValid}
+            loading={false}
+            actionText={"Create Room"}
+          />
         </form>
       </div>
     </div>

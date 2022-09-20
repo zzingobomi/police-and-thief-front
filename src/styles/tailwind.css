@@ -10,7 +10,7 @@
 }
 
 .primary-button {
-  @apply text-lg font-medium focus:outline-none text-white py-4 transition-colors bg-blue-500 hover:bg-blue-700;
+  @apply text-lg font-medium focus:outline-none text-white py-4 transition-colors;
 }
 
 @tailwind utilities;

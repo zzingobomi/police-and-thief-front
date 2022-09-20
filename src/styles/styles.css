@@ -665,16 +665,6 @@ video {
 }
 
 .primary-button {
-  --tw-bg-opacity: 1;
-  background-color: rgba(59, 130, 246, var(--tw-bg-opacity));
-}
-
-.primary-button:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgba(29, 78, 216, var(--tw-bg-opacity));
-}
-
-.primary-button {
   padding-top: 1rem;
   padding-bottom: 1rem;
   font-size: 1.125rem;
