@@ -1,4 +1,4 @@
-import { IClientInfo, PlayerType } from "../pages/room";
+import { IClientInfo, PlayerType, PrepareState } from "../pages/room";
 
 interface IRoomUserListProps {
   name: string;
@@ -29,7 +29,15 @@ export const RoomUserList = ({ name, users }: IRoomUserListProps) => {
                 loading="lazy"
               />
               <div className="min-w-0 relative flex-auto">{`${user.sessionId}`}</div>
-              <div className="items-end">{user.readyState}</div>
+              <div
+                className={`items-end ${
+                  user.prepareState === PrepareState.PREPARE
+                    ? "text-red-500"
+                    : "text-blue-500"
+                }`}
+              >
+                {user.prepareState}
+              </div>
             </div>
           );
         })}

@@ -9,10 +9,15 @@ export enum PlayerType {
   THIEF = "Thief",
 }
 
+export enum PrepareState {
+  PREPARE = "Prepare",
+  READY = "Ready",
+}
+
 export interface IClientInfo {
   playerType: string;
   sessionId: string;
-  readyState: string;
+  prepareState: PrepareState;
 }
 
 export const Room = () => {
