@@ -35,7 +35,7 @@ export const RoomUserList = ({ name, users }: IRoomUserListProps) => {
                   className="w-6 h-6 rounded-full bg-slate-100 ring-2 ring-gray-200"
                   loading="lazy"
                 />
-                <div className="min-w-0 relative flex-auto">{`${user.sessionId}`}</div>
+                <div className="min-w-0 relative flex-auto">{`${user.nickname}`}</div>
                 <div
                   className={`items-end ${
                     user.prepareState === PrepareState.PREPARE

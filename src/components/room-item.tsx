@@ -5,6 +5,7 @@ import { colyseusContext } from "../context";
 import { ColyseusStore } from "../store";
 import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useMe } from "../hooks/useMe";
 
 interface IRoomItemProps {
   room: Colyseus.RoomAvailable;
@@ -13,9 +14,13 @@ interface IRoomItemProps {
 export const RoomItem = ({ room }: IRoomItemProps) => {
   const { client } = useContext(colyseusContext);
   const history = useHistory();
+  const { data: userData } = useMe();
 
   const clickRoomEnter = async (roomId: string) => {
-    const joinRoom = await client?.joinById(roomId);
+    const nickname = userData?.me.nickname;
+    const joinRoom = await client?.joinById(roomId, {
+      nickname,
+    });
     if (joinRoom) {
       ColyseusStore.getInstance().SetRoom(joinRoom);
       history.push({

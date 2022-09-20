@@ -6,6 +6,7 @@ import { Button } from "../components/button";
 import { FormError } from "../components/form-error";
 import { colyseusContext } from "../context";
 import { COLYSEUS_ROOM_NAME } from "../core/constant";
+import { useMe } from "../hooks/useMe";
 import { ColyseusStore } from "../store";
 
 interface ICreateRoomForm {
@@ -14,6 +15,7 @@ interface ICreateRoomForm {
 }
 
 export const CreateRoom = () => {
+  const { data: userData } = useMe();
   const { client } = useContext(colyseusContext);
   const history = useHistory();
   const { register, getValues, errors, handleSubmit, formState } =
@@ -24,12 +26,13 @@ export const CreateRoom = () => {
       },
     });
 
-  // TODO: 방 이름 조절하기
   const onSubmit = async () => {
     const { roomName, maxClient } = getValues();
+    const nickname = userData?.me.nickname;
     const room = await client?.create(COLYSEUS_ROOM_NAME, {
       roomName,
       maxClient,
+      nickname,
     });
     if (room) {
       ColyseusStore.getInstance().SetRoom(room);

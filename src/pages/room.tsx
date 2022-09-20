@@ -18,6 +18,7 @@ export interface IClientInfo {
   playerType: string;
   sessionId: string;
   prepareState: PrepareState;
+  nickname: string;
 }
 
 export const Room = () => {
