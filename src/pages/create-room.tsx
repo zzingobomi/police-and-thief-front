@@ -31,7 +31,10 @@ export const CreateRoom = () => {
     });
     if (room) {
       ColyseusStore.getInstance().SetRoom(room);
-      history.push("/room");
+      history.push({
+        pathname: "/room",
+        state: { roomName },
+      });
     }
   };
 

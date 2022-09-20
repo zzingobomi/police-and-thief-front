@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { RoomUserList } from "../components/room-user-list";
 import { ColyseusStore } from "../store";
 
@@ -22,8 +22,10 @@ export interface IClientInfo {
 
 export const Room = () => {
   const room = ColyseusStore.getInstance().GetRoom();
-  const [clients, setClients] = useState<IClientInfo[]>([]);
   const history = useHistory();
+  const location = useLocation<{ roomName: string }>();
+  const roomName = location.state.roomName;
+  const [clients, setClients] = useState<IClientInfo[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -77,7 +79,7 @@ export const Room = () => {
         <title>Room | Police {"&"} Thief</title>
       </Helmet>
       <div className="w-full max-w-screen-md flex flex-col px-5 items-center">
-        <h4 className="title">ROOM</h4>
+        <h4 className="title">{roomName} ROOM</h4>
         <div className="w-full max-w-screen-md flex flex-row gap-4 mb-8">
           <RoomUserList
             name="Polices"

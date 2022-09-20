@@ -82,9 +82,13 @@ export const Lobby = () => {
       </Helmet>
       <div className="w-full max-w-screen-sm flex flex-col px-5 items-center">
         <h4 className="title">LOBBY</h4>
-        {allRooms.map((room) => {
-          return <RoomItem key={room.roomId} room={room} />;
-        })}
+        {allRooms.length <= 0 ? (
+          <img className="w-80" src="./data/empty.png" />
+        ) : (
+          allRooms.map((room) => {
+            return <RoomItem key={room.roomId} room={room} />;
+          })
+        )}
         <Link to="/create-room" className="text-blue-500 hover:underline mt-8">
           Go to CreateRoom →
         </Link>

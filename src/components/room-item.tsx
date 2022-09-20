@@ -15,10 +15,13 @@ export const RoomItem = ({ room }: IRoomItemProps) => {
   const history = useHistory();
 
   const clickRoomEnter = async (roomId: string) => {
-    const room = await client?.joinById(roomId);
-    if (room) {
-      ColyseusStore.getInstance().SetRoom(room);
-      history.push("/room");
+    const joinRoom = await client?.joinById(roomId);
+    if (joinRoom) {
+      ColyseusStore.getInstance().SetRoom(joinRoom);
+      history.push({
+        pathname: "/room",
+        state: { roomName: room.metadata.roomName },
+      });
     }
   };
 
@@ -29,7 +32,7 @@ export const RoomItem = ({ room }: IRoomItemProps) => {
       hover:bg-indigo-50 hover:shadow-md group ring-1 ring-gray-200 p-5 m-3"
     >
       <div>
-        <span className="text-3xl font-medium">{room.metadata.roomName}</span>
+        <span className="text-2xl font-medium">{room.metadata.roomName}</span>
       </div>
       <div>
         <FontAwesomeIcon icon={faUsers} className="text-xl mr-3" />
