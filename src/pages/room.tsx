@@ -62,6 +62,11 @@ export const Room = () => {
     setReady(true);
   };
 
+  const onGameLeave = () => {
+    room?.leave();
+    history.push("/");
+  };
+
   const onGameStart = () => {
     history.push("/game");
   };
@@ -87,16 +92,24 @@ export const Room = () => {
             )}
           />
         </div>
-        <button
-          className={` text-white font-bold py-2 px-4 rounded-full ${
-            ready
-              ? "bg-red-500 hover:bg-red-700"
-              : "bg-blue-500 hover:bg-blue-700"
-          }`}
-          onClick={ready ? onGameCancelReady : onGameReady}
-        >
-          {ready ? "Cancel Ready" : "Ready"}
-        </button>
+        <div className="w-full flex flex-row justify-end gap-5">
+          <button
+            className={` text-white font-bold py-2 px-4 rounded-full ${
+              ready
+                ? "bg-red-500 hover:bg-red-700"
+                : "bg-blue-500 hover:bg-blue-700"
+            }`}
+            onClick={ready ? onGameCancelReady : onGameReady}
+          >
+            {ready ? "Cancel Ready" : "Ready"}
+          </button>
+          <button
+            className="text-white font-bold py-2 px-4 rounded-full bg-gray-500 hover:bg-gray-700"
+            onClick={onGameLeave}
+          >
+            Exit
+          </button>
+        </div>
       </div>
     </div>
   );
