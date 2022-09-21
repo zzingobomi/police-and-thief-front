@@ -18,6 +18,7 @@ import { PlayerType } from "../../pages/room";
 
 export class NpcController extends Component {
   private _playerType: PlayerType;
+  private _nickname: string;
   private _target: Group | null;
 
   private _loader: GLTFLoader;
@@ -31,9 +32,10 @@ export class NpcController extends Component {
   private _initialPosition: IVec3 | null;
   private _initialRotation: IVec3 | null;
 
-  constructor(playerType: PlayerType) {
+  constructor(playerType: PlayerType, nickname: string) {
     super();
     this._playerType = playerType;
+    this._nickname = nickname;
     this._target = null;
     this._loader = new GLTFLoader();
     this._animations = {};
@@ -112,7 +114,33 @@ export class NpcController extends Component {
         this._initialRotation.y,
         this._initialRotation.z
       );
+
+      this.createNameBillboard();
     });
+  }
+
+  private createNameBillboard() {
+    if (!this._target) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.font = "20pt Arial";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.fillText(this._nickname, 128, 44);
+    ctx.strokeText(this._nickname, 128, 44);
+
+    const tex = new THREE.Texture(canvas);
+    tex.needsUpdate = true;
+    const spriteMat = new THREE.SpriteMaterial({ map: tex });
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.position.set(0, 70, 0);
+    sprite.scale.set(120, 120, 120);
+
+    this._target.add(sprite);
   }
 
   public Update(time: number): void {

@@ -76,7 +76,7 @@ export class NetworkController extends Component {
       y: player.rotation.y,
       z: player.rotation.z,
     };
-    const npcPlayer = npcSpawner.Spawn(player.playerType);
+    const npcPlayer = npcSpawner.Spawn(player.playerType, player.nickname);
     const npcController = npcPlayer.GetComponent(
       NPC_CONTROLLER
     ) as NpcController;
