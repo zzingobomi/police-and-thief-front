@@ -2,6 +2,7 @@ import { Component } from "../component";
 import * as THREE from "three";
 import { OrbitControls } from "three-stdlib";
 import { PerspectiveCamera, Scene, WebGLRenderer } from "three";
+import Stats from "../js/stats.module.js";
 
 export class ThreeJSController extends Component {
   private _divContainer: HTMLDivElement;
@@ -11,10 +12,14 @@ export class ThreeJSController extends Component {
 
   private _controls!: OrbitControls;
 
+  private _stats = Stats();
+
   constructor(container: HTMLDivElement) {
     super();
 
     this._divContainer = container;
+
+    THREE.Cache.enabled = true;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -24,6 +29,7 @@ export class ThreeJSController extends Component {
     //renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     this._divContainer.appendChild(renderer.domElement);
+    this._divContainer.appendChild(this._stats.dom);
     this._renderer = renderer;
 
     const scene = new THREE.Scene();
@@ -103,14 +109,15 @@ export class ThreeJSController extends Component {
     });
   }
 
+  public Update(time: number): void {
+    //this._controls.update();
+    this._stats.update();
+  }
+
   // private _setupControls() {
   //   this._controls = new OrbitControls(this._camera, this._divContainer);
   //   this._controls.target.set(0, 100, 0);
   //   this._controls.enablePan = true;
   //   this._controls.enableDamping = false;
   // }
-
-  update(time: number) {
-    this._controls.update();
-  }
 }

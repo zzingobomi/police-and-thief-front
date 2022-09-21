@@ -5,7 +5,6 @@ interface IRoomUserListProps {
   users: IClientInfo[];
 }
 
-// TODO: Ready State
 export const RoomUserList = ({ name, users }: IRoomUserListProps) => {
   return (
     <div className="w-full ring-1 ring-gray-100 rounded-lg shadow-lg divide-y divide-slate-100">
