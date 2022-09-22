@@ -5,6 +5,7 @@ import {
   ChickenDanceState,
   IdleState,
   JumpState,
+  PunchState,
   RunState,
   SillyDanceState,
   STATE,
@@ -23,14 +24,18 @@ export class CharacterFSM extends FiniteStateMachine {
   }
 
   private _init(playerType: PlayerType) {
-    this.AddState(STATE.IDLE, new IdleState(this));
-    this.AddState(STATE.WALK, new WalkState(this));
-    this.AddState(STATE.RUN, new RunState(this));
-    this.AddState(STATE.JUMP, new JumpState(this));
+    this.AddState(STATE.IDLE, new IdleState(this, playerType));
+    this.AddState(STATE.WALK, new WalkState(this, playerType));
+    this.AddState(STATE.RUN, new RunState(this, playerType));
+    this.AddState(STATE.JUMP, new JumpState(this, playerType));
     if (playerType === PlayerType.POLICE) {
-      this.AddState(STATE.SILLY_DANCE, new SillyDanceState(this));
+      this.AddState(STATE.SILLY_DANCE, new SillyDanceState(this, playerType));
+      this.AddState(STATE.PUNCH, new PunchState(this, playerType));
     } else {
-      this.AddState(STATE.CHICKEN_DANCE, new ChickenDanceState(this));
+      this.AddState(
+        STATE.CHICKEN_DANCE,
+        new ChickenDanceState(this, playerType)
+      );
     }
   }
 

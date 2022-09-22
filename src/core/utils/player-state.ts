@@ -6,6 +6,7 @@ import { CharacterFSM } from "./character-fsm";
 import { FiniteStateMachine } from "./finite-state-machine";
 import * as THREE from "three";
 import { PlayerType } from "../../pages/room";
+import { throwServerError } from "@apollo/client";
 
 export enum STATE {
   IDLE = "Idle",
@@ -20,10 +21,12 @@ export enum STATE {
 export class State {
   protected _parent: FiniteStateMachine;
   protected _name: string;
+  protected _playerType: PlayerType;
 
-  constructor(parent: FiniteStateMachine) {
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
     this._parent = parent;
     this._name = "";
+    this._playerType = playerType;
   }
 
   get Name() {
@@ -36,8 +39,8 @@ export class State {
 }
 
 export class IdleState extends State {
-  constructor(parent: FiniteStateMachine) {
-    super(parent);
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
+    super(parent, playerType);
   }
 
   get Name() {
@@ -68,6 +71,9 @@ export class IdleState extends State {
       return;
     }
 
+    if (this._playerType === PlayerType.POLICE && input.Keys.punch) {
+      this._parent.SetState(STATE.PUNCH);
+    }
     if (input.Keys.space) {
       this._parent.SetState(STATE.JUMP);
     }
@@ -92,8 +98,8 @@ export class IdleState extends State {
 }
 
 export class WalkState extends State {
-  constructor(parent: FiniteStateMachine) {
-    super(parent);
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
+    super(parent, playerType);
   }
 
   get Name() {
@@ -133,6 +139,10 @@ export class WalkState extends State {
       return;
     }
 
+    if (this._playerType === PlayerType.POLICE && input.Keys.punch) {
+      this._parent.SetState(STATE.PUNCH);
+    }
+
     if (input.Keys.space) {
       this._parent.SetState(STATE.JUMP);
       return;
@@ -155,8 +165,8 @@ export class WalkState extends State {
 }
 
 export class RunState extends State {
-  constructor(parent: FiniteStateMachine) {
-    super(parent);
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
+    super(parent, playerType);
   }
 
   get Name() {
@@ -196,6 +206,10 @@ export class RunState extends State {
       return;
     }
 
+    if (this._playerType === PlayerType.POLICE && input.Keys.punch) {
+      this._parent.SetState(STATE.PUNCH);
+    }
+
     if (input.Keys.space) {
       this._parent.SetState(STATE.JUMP);
       return;
@@ -220,8 +234,8 @@ export class RunState extends State {
 export class JumpState extends State {
   private jumpAction: THREE.AnimationAction | null;
   private prevState: State | null;
-  constructor(parent: FiniteStateMachine) {
-    super(parent);
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
+    super(parent, playerType);
     this.jumpAction = null;
     this.prevState = null;
   }
@@ -237,8 +251,10 @@ export class JumpState extends State {
       const prevAction = (this._parent as CharacterFSM).GetAnimation(
         prevState.Name
       );
+      this.jumpAction.reset();
       this.jumpAction.time = 0.0;
       this.jumpAction.enabled = true;
+      this.jumpAction.clampWhenFinished = true;
       this.jumpAction.setEffectiveTimeScale(1.0);
       this.jumpAction.setEffectiveWeight(1.0);
       this.jumpAction.crossFadeFrom(prevAction, 0.25, true);
@@ -246,6 +262,7 @@ export class JumpState extends State {
       this.jumpAction.setLoop(THREE.LoopOnce, 1);
       this.jumpAction.play();
     } else {
+      this.jumpAction.clampWhenFinished = true;
       this.jumpAction.setLoop(THREE.LoopOnce, 1);
       this.jumpAction.setDuration(1);
       this.jumpAction.play();
@@ -262,25 +279,60 @@ export class JumpState extends State {
 }
 
 export class PunchState extends State {
-  constructor(parent: FiniteStateMachine) {
-    super(parent);
+  private punchAction: THREE.AnimationAction | null;
+  private prevStateName: string | null;
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
+    super(parent, playerType);
+    this.punchAction = null;
+    this.prevStateName = null;
   }
 
   get Name() {
     return STATE.PUNCH;
   }
 
-  Enter(prevState: State) {}
+  Enter(prevState: State) {
+    this.punchAction = (this._parent as CharacterFSM).GetAnimation(STATE.PUNCH);
+    if (prevState) {
+      this.prevStateName = prevState.Name;
+      const prevAction = (this._parent as CharacterFSM).GetAnimation(
+        prevState.Name
+      );
+      this.punchAction.reset();
+      this.punchAction.time = 0.0;
+      this.punchAction.enabled = true;
+      this.punchAction.clampWhenFinished = true;
+      this.punchAction.setEffectiveTimeScale(1.0);
+      this.punchAction.setEffectiveWeight(1.0);
+      this.punchAction.crossFadeFrom(prevAction, 0.25, true);
+      this.punchAction.setDuration(0.5);
+      this.punchAction.setLoop(THREE.LoopOnce, 1);
+      this.punchAction.play();
+    } else {
+      this.punchAction.clampWhenFinished = true;
+      this.punchAction.setLoop(THREE.LoopOnce, 1);
+      this.punchAction.setDuration(0.5);
+      this.punchAction.play();
+    }
+  }
 
   Exit() {}
 
-  Update(time: number, input?: BasicCharacterControllerInput) {}
+  Update(time: number, input?: BasicCharacterControllerInput) {
+    if (this.punchAction && !this.punchAction.isRunning()) {
+      if (this.prevStateName) {
+        this._parent.SetState(this.prevStateName);
+      } else {
+        this._parent.SetState(STATE.IDLE);
+      }
+    }
+  }
 }
 
 export class SillyDanceState extends State {
   private sillyDanceAction: THREE.AnimationAction | null;
-  constructor(parent: FiniteStateMachine) {
-    super(parent);
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
+    super(parent, playerType);
     this.sillyDanceAction = null;
   }
 
@@ -297,8 +349,10 @@ export class SillyDanceState extends State {
       const prevAction = (this._parent as CharacterFSM).GetAnimation(
         prevState.Name
       );
+      this.sillyDanceAction.reset();
       this.sillyDanceAction.time = 0.0;
       this.sillyDanceAction.enabled = true;
+      this.sillyDanceAction.clampWhenFinished = true;
       this.sillyDanceAction.setEffectiveTimeScale(1.0);
       this.sillyDanceAction.setEffectiveWeight(1.0);
       this.sillyDanceAction.crossFadeFrom(prevAction, 0.25, true);
@@ -306,6 +360,7 @@ export class SillyDanceState extends State {
       this.sillyDanceAction.setLoop(THREE.LoopOnce, 1);
       this.sillyDanceAction.play();
     } else {
+      this.sillyDanceAction.clampWhenFinished = true;
       this.sillyDanceAction.setLoop(THREE.LoopOnce, 1);
       this.sillyDanceAction.setDuration(3);
       this.sillyDanceAction.play();
@@ -336,8 +391,8 @@ export class SillyDanceState extends State {
 
 export class ChickenDanceState extends State {
   private chickenDanceAction: THREE.AnimationAction | null;
-  constructor(parent: FiniteStateMachine) {
-    super(parent);
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
+    super(parent, playerType);
     this.chickenDanceAction = null;
   }
 
@@ -354,8 +409,10 @@ export class ChickenDanceState extends State {
       const prevAction = (this._parent as CharacterFSM).GetAnimation(
         prevState.Name
       );
+      this.chickenDanceAction.reset();
       this.chickenDanceAction.time = 0.0;
       this.chickenDanceAction.enabled = true;
+      this.chickenDanceAction.clampWhenFinished = true;
       this.chickenDanceAction.setEffectiveTimeScale(1.0);
       this.chickenDanceAction.setEffectiveWeight(1.0);
       this.chickenDanceAction.crossFadeFrom(prevAction, 0.25, true);
@@ -363,6 +420,7 @@ export class ChickenDanceState extends State {
       this.chickenDanceAction.setLoop(THREE.LoopOnce, 1);
       this.chickenDanceAction.play();
     } else {
+      this.chickenDanceAction.clampWhenFinished = true;
       this.chickenDanceAction.setLoop(THREE.LoopOnce, 1);
       this.chickenDanceAction.setDuration(3);
       this.chickenDanceAction.play();
