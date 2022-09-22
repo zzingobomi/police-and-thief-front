@@ -26,7 +26,9 @@ export const InGame = () => {
               className="w-16 h-16 rounded-full ring-2 ring-blue-500 ring-opacity-50"
               src="./data/police.png"
             />
-            <span className="font-bold text-2xl text-white">4</span>
+            <span className="font-bold text-2xl text-fill-white text-stroke-black text-stroke-2">
+              4
+            </span>
           </div>
 
           <span>0 : 59</span>
