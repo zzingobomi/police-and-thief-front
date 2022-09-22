@@ -31,7 +31,7 @@ export class NetworkController extends Component {
       if (this._socket?.sessionId === sessionId) {
         this.playerSpawner(player);
       } else {
-        this.npcSpawner(player);
+        this.npcSpawner(player, sessionId);
       }
     });
   }
@@ -60,9 +60,17 @@ export class NetworkController extends Component {
     myController.SetInitialPosition(initialPosition);
     myController.SetInitialRotation(initialRotation);
     gridController.CreateNewClient();
+
+    player.onChange = (changes: any) => {
+      changes.forEach((change: any) => {
+        if (change.field === "alive") {
+          myController.SetDie();
+        }
+      });
+    };
   }
 
-  private npcSpawner(player: any) {
+  private npcSpawner(player: any, sessionId: string) {
     const npcSpawner = this.FindEntity(SPAWNER)?.GetComponent(
       NETWORK_ENTITY_SPAWNER
     ) as NetworkEntitySpawner;
@@ -76,7 +84,11 @@ export class NetworkController extends Component {
       y: player.rotation.y,
       z: player.rotation.z,
     };
-    const npcPlayer = npcSpawner.Spawn(player.playerType, player.nickname);
+    const npcPlayer = npcSpawner.Spawn(
+      player.playerType,
+      player.nickname,
+      sessionId
+    );
     const npcController = npcPlayer.GetComponent(
       NPC_CONTROLLER
     ) as NpcController;
@@ -91,6 +103,9 @@ export class NetworkController extends Component {
       changes.forEach((change: any) => {
         if (change.field === "currentState") {
           npcController.SetCurrentState(change.value);
+        }
+        if (change.field === "alive") {
+          npcController.SetDie();
         }
       });
     };

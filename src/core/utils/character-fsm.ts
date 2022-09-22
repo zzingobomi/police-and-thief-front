@@ -3,6 +3,7 @@ import { AnimationMap } from "../controllers/player-entity";
 import { FiniteStateMachine } from "./finite-state-machine";
 import {
   ChickenDanceState,
+  DieState,
   IdleState,
   JumpState,
   PunchState,
@@ -29,9 +30,10 @@ export class CharacterFSM extends FiniteStateMachine {
     this.AddState(STATE.RUN, new RunState(this, playerType));
     this.AddState(STATE.JUMP, new JumpState(this, playerType));
     if (playerType === PlayerType.POLICE) {
-      this.AddState(STATE.SILLY_DANCE, new SillyDanceState(this, playerType));
       this.AddState(STATE.PUNCH, new PunchState(this, playerType));
+      this.AddState(STATE.SILLY_DANCE, new SillyDanceState(this, playerType));
     } else {
+      this.AddState(STATE.DIE, new DieState(this, playerType));
       this.AddState(
         STATE.CHICKEN_DANCE,
         new ChickenDanceState(this, playerType)

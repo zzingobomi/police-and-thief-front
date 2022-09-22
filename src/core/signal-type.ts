@@ -6,4 +6,5 @@ export enum SignalType {
   UPDATE_SCALE = "UpdateScale",
   UPDATE_STATE = "UpdateState",
   NPC_UPDATE_POSITION = "NpcUpdatePosition",
+  CATCH_THIEF = "CatchThief",
 }

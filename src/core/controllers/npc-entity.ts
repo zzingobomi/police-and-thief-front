@@ -19,6 +19,8 @@ import { PlayerType } from "../../pages/room";
 export class NpcController extends Component {
   private _playerType: PlayerType;
   private _nickname: string;
+  private _sessionId: string;
+  private _alive = true;
   private _target: Group | null;
 
   private _loader: GLTFLoader;
@@ -32,10 +34,11 @@ export class NpcController extends Component {
   private _initialPosition: IVec3 | null;
   private _initialRotation: IVec3 | null;
 
-  constructor(playerType: PlayerType, nickname: string) {
+  constructor(playerType: PlayerType, nickname: string, sessionId: string) {
     super();
     this._playerType = playerType;
     this._nickname = nickname;
+    this._sessionId = sessionId;
     this._target = null;
     this._loader = new GLTFLoader();
     this._animations = {};
@@ -64,6 +67,12 @@ export class NpcController extends Component {
   }
   public SetCurrentState(name: string) {
     this._stateMachine?.SetState(name);
+  }
+  public GetPlayerType() {
+    return this._playerType;
+  }
+  public GetSessionId() {
+    return this._sessionId;
   }
 
   private _loadModel() {
@@ -166,5 +175,13 @@ export class NpcController extends Component {
   }
   public SetInitialRotation(rotation: IVec3) {
     this._initialRotation = rotation;
+  }
+
+  public GetAlive() {
+    return this._alive;
+  }
+  public SetDie() {
+    console.log("die....");
+    this._alive = false;
   }
 }

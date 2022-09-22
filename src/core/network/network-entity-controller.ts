@@ -25,6 +25,9 @@ export class NetworkEntityController extends Component {
     PubSub.subscribe(SignalType.UPDATE_STATE, (msg, state) => {
       this.sendUpdateState(state);
     });
+    PubSub.subscribe(SignalType.CATCH_THIEF, (msg, sessionId) => {
+      this.sendCatchThief(sessionId);
+    });
   }
 
   private sendUpdatePosition(position: IVec3) {
@@ -35,5 +38,8 @@ export class NetworkEntityController extends Component {
   }
   private sendUpdateState(state: string) {
     this._socket?.send("update.state", state);
+  }
+  private sendCatchThief(sessionId: string) {
+    this._socket?.send("catch.thief", sessionId);
   }
 }

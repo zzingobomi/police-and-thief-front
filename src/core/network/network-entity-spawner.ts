@@ -11,9 +11,9 @@ export class NetworkEntitySpawner extends Component {
     super();
   }
 
-  public Spawn(playerType: PlayerType, nickname: string) {
+  public Spawn(playerType: PlayerType, nickname: string, sessionId: string) {
     const npc = new Entity();
-    npc.AddComponent(new NpcController(playerType, nickname));
+    npc.AddComponent(new NpcController(playerType, nickname, sessionId));
 
     const grid = this.FindEntity(HASH_GRID)?.GetComponent(
       SPATIAL_HASH_GRID

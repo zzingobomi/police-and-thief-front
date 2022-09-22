@@ -14,6 +14,7 @@ export enum STATE {
   RUN = "Run",
   JUMP = "Jump",
   PUNCH = "Punch",
+  DIE = "Die",
   SILLY_DANCE = "Silly_Dance",
   CHICKEN_DANCE = "Chicken_Dance",
 }
@@ -445,6 +446,51 @@ export class ChickenDanceState extends State {
 
     if (this.chickenDanceAction && !this.chickenDanceAction.isRunning()) {
       this._parent.SetState(STATE.IDLE);
+    }
+  }
+}
+
+export class DieState extends State {
+  private dieAction: THREE.AnimationAction | null;
+  constructor(parent: FiniteStateMachine, playerType: PlayerType) {
+    super(parent, playerType);
+    this.dieAction = null;
+  }
+
+  get Name() {
+    return STATE.DIE;
+  }
+
+  Enter(prevState: State) {
+    if (this._playerType !== PlayerType.THIEF) return;
+    this.dieAction = (this._parent as CharacterFSM).GetAnimation(STATE.DIE);
+    if (prevState) {
+      const prevAction = (this._parent as CharacterFSM).GetAnimation(
+        prevState.Name
+      );
+      this.dieAction.reset();
+      this.dieAction.time = 0.0;
+      this.dieAction.enabled = true;
+      this.dieAction.clampWhenFinished = true;
+      this.dieAction.setEffectiveTimeScale(1.0);
+      this.dieAction.setEffectiveWeight(1.0);
+      this.dieAction.crossFadeFrom(prevAction, 0.25, true);
+      this.dieAction.setDuration(1);
+      this.dieAction.setLoop(THREE.LoopOnce, 1);
+      this.dieAction.play();
+    } else {
+      this.dieAction.clampWhenFinished = true;
+      this.dieAction.setLoop(THREE.LoopOnce, 1);
+      this.dieAction.setDuration(1);
+      this.dieAction.play();
+    }
+  }
+
+  Exit() {}
+
+  Update(time: number, input?: BasicCharacterControllerInput) {
+    if (this.dieAction && !this.dieAction.isRunning()) {
+      // TODO: thief Die
     }
   }
 }

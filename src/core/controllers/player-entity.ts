@@ -30,6 +30,7 @@ import PubSub from "pubsub-js";
 import { SignalType } from "../signal-type";
 import { SpatialGridController } from "./spatial-grid-controller";
 import { PlayerType } from "../../pages/room";
+import { NpcController } from "./npc-entity";
 
 export class AnimationMap {
   [key: string]: AnimationAction;
@@ -37,6 +38,7 @@ export class AnimationMap {
 
 export class BasicCharacterController extends Component {
   private _playerType: PlayerType;
+  private _alive = true;
   private _target: Group | null;
 
   private _loader: GLTFLoader;
@@ -191,6 +193,14 @@ export class BasicCharacterController extends Component {
     const oldPosition = this._target.position.clone();
     const pos = this._target.position.clone();
     pos.add(deltaPosition);
+
+    // 도둑 잡기 처리
+    if (
+      this._playerType === PlayerType.POLICE &&
+      this.GetCurrentState()?.Name === STATE.PUNCH
+    ) {
+      this.checkCatchThief();
+    }
 
     const collisions = this.findIntersections(pos, oldPosition);
     if (collisions && collisions.length > 0) {
@@ -421,6 +431,54 @@ export class BasicCharacterController extends Component {
     // }
   }
 
+  private checkCatchThief() {
+    if (!this._target) return;
+
+    const thiefs = this.findThiefs(this._target.position);
+    if (thiefs && thiefs.length > 0) {
+      const thief = thiefs[0];
+      PubSub.publish(SignalType.CATCH_THIEF, thief.GetSessionId());
+    }
+  }
+
+  private findThiefs(pos: THREE.Vector3) {
+    const grid = this._gridController;
+    if (!grid) return;
+
+    const nearby = grid
+      .FindNearbyEntities(5)
+      .filter((e) => e.entity.GetAlive() === true);
+    const thiefs: NpcController[] = [];
+
+    for (let i = 0; i < nearby.length; ++i) {
+      const e = nearby[i].entity;
+
+      if (!e.GetPosition()) continue;
+      if (e.GetPlayerType() !== PlayerType.THIEF) continue;
+
+      // 거리체크
+      const d =
+        ((pos.x - e.GetPosition().x) ** 2 + (pos.z - e.GetPosition().z) ** 2) **
+        0.5;
+      if (d > 120) continue;
+
+      // 바라보고 있는 방향과의 각도 체크
+      if (!this._target) return;
+      const toThiefVec = e
+        .GetPosition()
+        .clone()
+        .sub(this._target.position)
+        .normalize();
+      const forwordVec = this.getForwardVector()?.clone().normalize();
+      if (!forwordVec) return;
+      const angle = forwordVec.dot(toThiefVec);
+      if (angle < 0.8) continue;
+
+      thiefs.push(nearby[i].entity);
+    }
+    return thiefs;
+  }
+
   private getForwardVector() {
     if (!this._camera) return;
 
@@ -450,7 +508,9 @@ export class BasicCharacterController extends Component {
     const grid = this._gridController;
     if (!grid) return;
 
-    const nearby = grid.FindNearbyEntities(500);
+    const nearby = grid
+      .FindNearbyEntities(5)
+      .filter((e) => e.entity.GetAlive() === true);
     const collisions = [];
 
     for (let i = 0; i < nearby.length; ++i) {
@@ -652,5 +712,13 @@ export class BasicCharacterController extends Component {
 
   public GetCurrentState() {
     return this._stateMachine?.GetCurrentState();
+  }
+
+  public GetAlive() {
+    return this._alive;
+  }
+  public SetDie() {
+    console.log("i am die...");
+    this._alive = false;
   }
 }
