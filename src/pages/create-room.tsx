@@ -12,6 +12,7 @@ import { ColyseusStore } from "../store";
 interface ICreateRoomForm {
   roomName: string;
   maxClient: number;
+  playTime: number;
 }
 
 export const CreateRoom = () => {
@@ -21,17 +22,15 @@ export const CreateRoom = () => {
   const { register, getValues, errors, handleSubmit, formState } =
     useForm<ICreateRoomForm>({
       mode: "onChange",
-      defaultValues: {
-        maxClient: 8,
-      },
     });
 
   const onSubmit = async () => {
-    const { roomName, maxClient } = getValues();
+    const { roomName, maxClient, playTime } = getValues();
     const nickname = userData?.me.nickname;
     const room = await client?.create(COLYSEUS_ROOM_NAME, {
       roomName,
       maxClient,
+      playTime,
       nickname,
     });
     if (room) {
@@ -78,11 +77,28 @@ export const CreateRoom = () => {
             min={2}
             max={8}
             required
-            placeholder="Max"
+            placeholder="Max Poeple"
             className="input"
           />
           {errors.maxClient?.message && (
             <FormError errorMessage={errors.maxClient?.message} />
+          )}
+          <input
+            ref={register({
+              required: "playTime is required",
+              min: 1,
+              max: 10,
+            })}
+            type="number"
+            name="playTime"
+            min={1}
+            max={10}
+            required
+            placeholder="PlayTime"
+            className="input"
+          />
+          {errors.playTime?.message && (
+            <FormError errorMessage={errors.playTime?.message} />
           )}
           <Button
             canClick={formState.isValid}

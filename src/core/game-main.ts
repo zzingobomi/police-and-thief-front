@@ -23,7 +23,6 @@ import { NetworkController } from "./network/network-controller";
 import { SpatialHashGrid } from "./components/spatial-hash-grid";
 import { SpatialGridController } from "./controllers/spatial-grid-controller";
 
-// TODO: singleton 적용
 export class GameMain {
   private _divContainer: HTMLDivElement;
   private _renderer: WebGLRenderer | null;
@@ -34,12 +33,15 @@ export class GameMain {
 
   private _previousTime = 0;
 
-  constructor(container: HTMLDivElement) {
+  private _endPlayTime = 0;
+
+  constructor(container: HTMLDivElement, endPlayTime: number) {
     this._divContainer = container;
     this._renderer = null;
     this._camera = null;
     this._scene = null;
     this._entityManager = new EntityManager();
+    this._endPlayTime = endPlayTime;
   }
 
   public Init() {

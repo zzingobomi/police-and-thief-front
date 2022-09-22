@@ -49,8 +49,8 @@ export const Room = () => {
       room.onMessage("ready.update", (clients: IClientInfo[]) => {
         setClients(clients);
       });
-      room.onMessage("game.start", () => {
-        onGameStart();
+      room.onMessage("game.start", (endPlayTime: number) => {
+        onGameStart(endPlayTime);
       });
     }
   }, []);
@@ -70,8 +70,11 @@ export const Room = () => {
     history.push("/");
   };
 
-  const onGameStart = () => {
-    history.push("/game");
+  const onGameStart = (endPlayTime: number) => {
+    history.push({
+      pathname: "/game",
+      state: { endPlayTime },
+    });
   };
 
   return (
