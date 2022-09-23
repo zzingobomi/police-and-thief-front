@@ -125,6 +125,14 @@ export const Room = () => {
             Exit
           </button>
         </div>
+        <div className="w-full flex flex-col text-gray-400 text-sm items-start mt-10">
+          <span>Tip:</span>
+          <span>* 경찰은 주어진 시간내에 모든 도둑을 잡으면 승리합니다.</span>
+          <span>* 도둑은 시간이 끝날때까지 살아있으면 승리합니다.</span>
+          <span>* A, S, W, D 로 이동 J 키로 점프 합니다.</span>
+          <span>* 경찰은 F 키를 눌러 도둑을 잡을 수 있습니다.</span>
+          <span>* 상대를 놀릴때는 H 키를 눌러보세요.</span>
+        </div>
       </div>
     </div>
   );

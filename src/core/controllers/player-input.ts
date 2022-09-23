@@ -35,6 +35,7 @@ export class BasicCharacterControllerInput extends Component {
     document.addEventListener("keyup", (event) => this._onKeyUp(event));
     document.addEventListener("mousedown", () => {
       document.body.requestPointerLock();
+      document.body.requestFullscreen();
     });
     document.addEventListener("mousemove", (event) => this._onMouseMove(event));
   }
