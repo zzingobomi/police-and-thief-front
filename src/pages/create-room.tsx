@@ -37,7 +37,7 @@ export const CreateRoom = () => {
       ColyseusStore.getInstance().SetRoom(room);
       history.push({
         pathname: "/room",
-        state: { roomName },
+        state: { roomName, playTime },
       });
     }
   };

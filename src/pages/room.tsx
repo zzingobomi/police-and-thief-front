@@ -24,8 +24,9 @@ export interface IClientInfo {
 export const Room = () => {
   const room = ColyseusStore.getInstance().GetRoom();
   const history = useHistory();
-  const location = useLocation<{ roomName: string }>();
+  const location = useLocation<{ roomName: string; playTime: number }>();
   const roomName = location.state.roomName;
+  const playTime = location.state.playTime;
   const [clients, setClients] = useState<IClientInfo[]>([]);
   const [ready, setReady] = useState(false);
 
@@ -93,12 +94,14 @@ export const Room = () => {
         <div className="w-full max-w-screen-md flex flex-row gap-4 mb-8">
           <RoomUserList
             name="Polices"
+            playTime={playTime}
             users={clients.filter(
               (client) => client.playerType === PlayerType.POLICE
             )}
           />
           <RoomUserList
             name="Thiefs"
+            playTime={playTime}
             users={clients.filter(
               (client) => client.playerType === PlayerType.THIEF
             )}

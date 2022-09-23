@@ -4,6 +4,7 @@ import { useHistory } from "react-router-dom";
 import { colyseusContext } from "../context";
 import { ColyseusStore } from "../store";
 import { faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faStopwatch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMe } from "../hooks/useMe";
 
@@ -25,7 +26,10 @@ export const RoomItem = ({ room }: IRoomItemProps) => {
       ColyseusStore.getInstance().SetRoom(joinRoom);
       history.push({
         pathname: "/room",
-        state: { roomName: room.metadata.roomName },
+        state: {
+          roomName: room.metadata.roomName,
+          playTime: room.metadata.playTime,
+        },
       });
     }
   };
@@ -39,10 +43,28 @@ export const RoomItem = ({ room }: IRoomItemProps) => {
       <div>
         <span className="text-2xl font-medium">{room.metadata.roomName}</span>
       </div>
-      <div>
-        <FontAwesomeIcon icon={faUsers} className="text-xl mr-3" />
-        <span className="text-2xl text-red-500">{room.clients}</span>
-        <span className="text-2xl mr-3"> / {room.maxClients}</span>
+      <div className="flex flex-row items-center gap-5">
+        <div>
+          <FontAwesomeIcon
+            icon={faUsers}
+            className="text-xl text-gray-500 mr-3"
+          />
+          <span className="text-2xl text-red-500">{room.clients}</span>
+          <span className="text-2xl text-gray-500 mr-3">
+            {" "}
+            / {room.maxClients}
+          </span>
+        </div>
+        <div>
+          <FontAwesomeIcon
+            icon={faStopwatch}
+            className="text-xl text-gray-500 mr-3"
+          />
+          <span className="text-2xl text-gray-500 mr-3">
+            {room.metadata.playTime}m
+          </span>
+        </div>
+
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
           onClick={() => clickRoomEnter(room.roomId)}

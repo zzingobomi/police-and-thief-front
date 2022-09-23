@@ -1,14 +1,26 @@
 import { IClientInfo, PlayerType, PrepareState } from "../pages/room";
+import { faStopwatch } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface IRoomUserListProps {
   name: string;
+  playTime: number;
   users: IClientInfo[];
 }
 
-export const RoomUserList = ({ name, users }: IRoomUserListProps) => {
+export const RoomUserList = ({ name, playTime, users }: IRoomUserListProps) => {
   return (
     <div className="w-full ring-1 ring-gray-100 rounded-lg shadow-lg divide-y divide-slate-100">
-      <div className="py-4 px-6 text-xl font-medium">{name}</div>
+      <div className="flex flex-row justify-between items-center">
+        <div className="py-4 px-6 text-xl font-medium">{name}</div>
+        <div className="mr-6">
+          <FontAwesomeIcon
+            icon={faStopwatch}
+            className="text-1xl mr-3 text-gray-500"
+          />
+          <span className="text-1xl text-gray-500">{playTime}m</span>
+        </div>
+      </div>
 
       <ul
         className={`divide-y divide-slate-100 ${
