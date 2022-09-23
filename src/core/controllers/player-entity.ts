@@ -455,7 +455,7 @@ export class BasicCharacterController extends Component {
     if (!grid) return;
 
     const nearby = grid
-      .FindNearbyEntities(5)
+      .FindNearbyEntities(500)
       .filter((e) => e.entity.GetAlive() === true);
     const thiefs: NpcController[] = [];
 
@@ -518,7 +518,7 @@ export class BasicCharacterController extends Component {
     if (!grid) return;
 
     const nearby = grid
-      .FindNearbyEntities(5)
+      .FindNearbyEntities(500)
       .filter((e) => e.entity.GetAlive() === true);
     const collisions = [];
 

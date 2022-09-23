@@ -9,6 +9,7 @@ import { ColyseusStore } from "../../store";
 
 export const InGame = () => {
   const room = ColyseusStore.getInstance().GetRoom();
+  const game = useRef<GameMain>();
   const history = useHistory();
   const container = useRef<HTMLDivElement>(null);
   const location = useLocation<{ endPlayTime: number }>();
@@ -16,6 +17,16 @@ export const InGame = () => {
   const [policeCount, setPoliceCount] = useState(0);
   const [thiefCount, setThiefCount] = useState(0);
   const [remainTime, setRemainTime] = useState("");
+
+  const goToResultPage = async (victoryTeam: string) => {
+    if (!game.current) return;
+    game.current.Dispose();
+    await room?.leave();
+    history.push({
+      pathname: "/result",
+      state: { victoryTeam },
+    });
+  };
 
   useInterval(() => {
     const remain = endPlayTime - Date.now();
@@ -26,8 +37,8 @@ export const InGame = () => {
     let isMounted = true;
     if (isMounted) {
       if (container.current && container.current.children.length > 1) return;
-      const game = new GameMain(container.current!, endPlayTime);
-      game.Init();
+      game.current = new GameMain(container.current!, endPlayTime);
+      game.current.Init();
 
       PubSub.subscribe(SignalType.CREATE_PLAYER, (msg, data) => {
         const { player } = data;
@@ -43,12 +54,13 @@ export const InGame = () => {
           setThiefCount(thiefCount);
         });
         room.onMessage("game.result", async (victoryTeam: string) => {
-          game.Dispose();
-          await room?.leave();
-          history.push({
-            pathname: "/result",
-            state: { victoryTeam },
-          });
+          if (victoryTeam === PlayerType.POLICE) {
+            setTimeout(() => {
+              goToResultPage(victoryTeam);
+            }, 2000);
+          } else {
+            goToResultPage(victoryTeam);
+          }
         });
       }
     }
