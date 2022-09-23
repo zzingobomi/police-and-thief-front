@@ -9,7 +9,7 @@ import * as Colyseus from "colyseus.js";
 import { colyseusContext } from "./context";
 import { apolloClient } from "./apollo";
 
-const client = new Colyseus.Client("ws://localhost:7200");
+const client = new Colyseus.Client(`ws://${process.env.REACT_APP_GAMESERVER}`);
 
 ReactDOM.render(
   <React.StrictMode>
