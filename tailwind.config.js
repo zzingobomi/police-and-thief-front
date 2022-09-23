@@ -15,6 +15,9 @@ module.exports = {
       mfs: { paintOrder: "markers fill stroke" },
       msf: { paintOrder: "markers stroke fill" },
     },
+    fontFamily: {
+      dsdigi: ["dsdigi", "sans-serif"],
+    },
   },
   variants: {
     extend: {},

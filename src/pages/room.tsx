@@ -30,7 +30,8 @@ export const Room = () => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (room) {
+    let isMounted = true;
+    if (isMounted && room) {
       room.onStateChange.once((state) => {
         //console.log("initial room state:", state);
       });
@@ -53,6 +54,10 @@ export const Room = () => {
         onGameStart(endPlayTime);
       });
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const onGameCancelReady = () => {
@@ -71,6 +76,7 @@ export const Room = () => {
   };
 
   const onGameStart = (endPlayTime: number) => {
+    setReady(true);
     history.push({
       pathname: "/game",
       state: { endPlayTime },

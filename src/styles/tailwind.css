@@ -137,4 +137,9 @@
   @apply text-lg font-medium focus:outline-none text-white py-4 transition-colors;
 }
 
+@font-face {
+  font-family: "dsdigi";
+  src: url("../assets/fonts/DS-DIGIB.TTF");
+}
+
 @tailwind utilities;
