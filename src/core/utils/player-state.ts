@@ -488,9 +488,5 @@ export class DieState extends State {
 
   Exit() {}
 
-  Update(time: number, input?: BasicCharacterControllerInput) {
-    if (this.dieAction && !this.dieAction.isRunning()) {
-      // TODO: thief Die
-    }
-  }
+  Update(time: number, input?: BasicCharacterControllerInput) {}
 }

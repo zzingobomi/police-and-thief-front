@@ -21,6 +21,7 @@ export class NpcController extends Component {
   private _nickname: string;
   private _sessionId: string;
   private _alive = true;
+  private _needUpdate = true;
   private _target: Group | null;
 
   private _loader: GLTFLoader;
@@ -153,6 +154,7 @@ export class NpcController extends Component {
   }
 
   public Update(time: number): void {
+    if (!this._needUpdate) return;
     if (!this._stateMachine) {
       return;
     }
@@ -161,6 +163,13 @@ export class NpcController extends Component {
 
     if (this._mixer) {
       this._mixer.update(time);
+    }
+
+    if (!this._alive && this._target) {
+      if (!this._stateMachine.GetAnimation(STATE.DIE).isRunning()) {
+        this._target.visible = false;
+        this._needUpdate = false;
+      }
     }
   }
 
@@ -181,7 +190,9 @@ export class NpcController extends Component {
     return this._alive;
   }
   public SetDie() {
-    console.log("die....");
+    if (this._playerType !== PlayerType.THIEF) return;
+
+    this._stateMachine?.SetState(STATE.DIE);
     this._alive = false;
   }
 }

@@ -39,6 +39,7 @@ export class AnimationMap {
 export class BasicCharacterController extends Component {
   private _playerType: PlayerType;
   private _alive = true;
+  private _needUpdate = true;
   private _target: Group | null;
 
   private _loader: GLTFLoader;
@@ -121,6 +122,7 @@ export class BasicCharacterController extends Component {
   }
 
   public Update(time: number): void {
+    if (!this._needUpdate) return;
     if (!this._stateMachine) {
       return;
     }
@@ -238,6 +240,13 @@ export class BasicCharacterController extends Component {
       y: this._target.position.y,
       z: this._target.position.z,
     });
+
+    if (!this._alive) {
+      if (!this._stateMachine.GetAnimation(STATE.DIE).isRunning()) {
+        this._target.visible = false;
+        this._needUpdate = false;
+      }
+    }
 
     /*
     const velocity = this._velocity;
@@ -718,7 +727,9 @@ export class BasicCharacterController extends Component {
     return this._alive;
   }
   public SetDie() {
-    console.log("i am die...");
+    if (this._playerType !== PlayerType.THIEF) return;
+
+    this._stateMachine?.SetState(STATE.DIE);
     this._alive = false;
   }
 }

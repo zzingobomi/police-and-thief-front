@@ -31,17 +31,30 @@ export class BasicCharacterControllerInput extends Component {
   }
 
   public InitComponent(): void {
-    document.addEventListener("keydown", (event) => this._onKeyDown(event));
-    document.addEventListener("keyup", (event) => this._onKeyUp(event));
-    document.addEventListener("mousedown", () => {
-      document.body.requestPointerLock();
-      document.body.requestFullscreen();
-    });
-    document.addEventListener("mousemove", (event) => this._onMouseMove(event));
+    document.addEventListener("keydown", this.onKeyDownWrapper);
+    document.addEventListener("keyup", this.onKeyUpWrapper);
+    document.addEventListener("mousedown", this.onMouseDownWrapper);
+    document.addEventListener("mousemove", this.onMouseMoveWrapper);
+  }
+
+  public Dispose(): void {
+    if (document.pointerLockElement === document.body) {
+      document.exitPointerLock();
+    }
+    document.removeEventListener("keydown", this.onKeyDownWrapper);
+    document.removeEventListener("keyup", this.onKeyUpWrapper);
+    document.removeEventListener("mousedown", this.onMouseDownWrapper);
+    document.removeEventListener("mousemove", this.onMouseMoveWrapper);
   }
 
   get Keys() {
     return this._keys;
+  }
+
+  private _onMouseDown(event: MouseEvent) {
+    document.body.requestPointerLock();
+    // TODO:
+    //document.body.requestFullscreen();
   }
 
   private _onMouseMove(event: MouseEvent) {
@@ -119,4 +132,23 @@ export class BasicCharacterControllerInput extends Component {
         break;
     }
   }
+
+  ///
+  /// addEventListener Wrapper
+  ///
+  onKeyDownWrapper = (event: KeyboardEvent) => {
+    this._onKeyDown(event);
+  };
+
+  onKeyUpWrapper = (event: KeyboardEvent) => {
+    this._onKeyUp(event);
+  };
+
+  onMouseDownWrapper = (event: MouseEvent) => {
+    this._onMouseDown(event);
+  };
+
+  onMouseMoveWrapper = (event: MouseEvent) => {
+    this._onMouseMove(event);
+  };
 }

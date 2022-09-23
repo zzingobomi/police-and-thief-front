@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useInterval } from "react-interval-hook";
 import { GameMain } from "../../core/game-main";
 import PubSub from "pubsub-js";
 import { SignalType } from "../../core/signal-type";
 import { PlayerType } from "../room";
+import { ColyseusStore } from "../../store";
 
 export const InGame = () => {
+  const room = ColyseusStore.getInstance().GetRoom();
+  const history = useHistory();
   const container = useRef<HTMLDivElement>(null);
   const location = useLocation<{ endPlayTime: number }>();
   const endPlayTime = location.state.endPlayTime;
@@ -20,18 +23,39 @@ export const InGame = () => {
   });
 
   useEffect(() => {
-    if (container.current && container.current.children.length > 1) return;
-    const game = new GameMain(container.current!, endPlayTime);
-    game.Init();
+    let isMounted = true;
+    if (isMounted) {
+      if (container.current && container.current.children.length > 1) return;
+      const game = new GameMain(container.current!, endPlayTime);
+      game.Init();
 
-    PubSub.subscribe(SignalType.CREATE_PLAYER, (msg, data) => {
-      const { player } = data;
-      if (player.playerType === PlayerType.POLICE) {
-        setPoliceCount((prev) => prev + 1);
-      } else {
-        setThiefCount((prev) => prev + 1);
+      PubSub.subscribe(SignalType.CREATE_PLAYER, (msg, data) => {
+        const { player } = data;
+        if (player.playerType === PlayerType.POLICE) {
+          setPoliceCount((prev) => prev + 1);
+        } else {
+          setThiefCount((prev) => prev + 1);
+        }
+      });
+
+      if (room) {
+        room.onMessage("upate.thief", (thiefCount: number) => {
+          setThiefCount(thiefCount);
+        });
+        room.onMessage("game.result", async (victoryTeam: string) => {
+          game.Dispose();
+          await room?.leave();
+          history.push({
+            pathname: "/result",
+            state: { victoryTeam },
+          });
+        });
       }
-    });
+    }
+
+    return () => {
+      isMounted = false;
+    };
   });
 
   return (

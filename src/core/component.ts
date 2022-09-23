@@ -22,4 +22,6 @@ export class Component {
   public GetComponent(name: string) {
     return this._parent?.GetComponent(name);
   }
+
+  public Dispose() {}
 }

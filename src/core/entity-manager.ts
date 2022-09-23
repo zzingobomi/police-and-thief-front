@@ -31,4 +31,10 @@ export class EntityManager {
       entity.Update(time);
     }
   }
+
+  public Dispose() {
+    for (const entity of this._entities) {
+      entity.Dispose();
+    }
+  }
 }

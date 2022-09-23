@@ -8,6 +8,7 @@ import * as THREE from "three";
 
 export class FirstPersonCamera extends Component {
   private _camera: PerspectiveCamera | null;
+  private _pubsubToken = "";
 
   constructor() {
     super();
@@ -19,9 +20,16 @@ export class FirstPersonCamera extends Component {
       THREEJS_CONTROLLER
     ) as ThreeJSController;
     this._camera = threejs.GetCamera();
-    PubSub.subscribe(SignalType.MOUSE_MOVE, (msg, event) => {
-      this.onMouseMove(event);
-    });
+    this._pubsubToken = PubSub.subscribe(
+      SignalType.MOUSE_MOVE,
+      (msg, event) => {
+        this.onMouseMove(event);
+      }
+    );
+  }
+
+  public Dispose(): void {
+    PubSub.unsubscribe(this._pubsubToken);
   }
 
   private onMouseMove(event: MouseEvent) {

@@ -120,4 +120,10 @@ export class ThreeJSController extends Component {
   //   this._controls.enablePan = true;
   //   this._controls.enableDamping = false;
   // }
+
+  public Dispose(): void {
+    while (this._scene.children.length > 0) {
+      this._scene.remove(this._scene.children[0]);
+    }
+  }
 }

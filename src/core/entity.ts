@@ -70,4 +70,10 @@ export class Entity {
   public SetQuaternion(rotation: Quaternion) {
     this._rotation.copy(rotation);
   }
+
+  public Dispose() {
+    for (const key in this._components) {
+      this._components[key].Dispose();
+    }
+  }
 }

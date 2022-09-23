@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { CreateRoom } from "../pages/create-room";
 import { InGame } from "../pages/ingame/in-game";
 import { Lobby } from "../pages/lobby";
+import { Result } from "../pages/result";
 import { Room } from "../pages/room";
 
 export const LoggedInRouter = () => {
@@ -20,6 +21,9 @@ export const LoggedInRouter = () => {
         </Route>
         <Route path="/game" exact>
           <InGame />
+        </Route>
+        <Route path="/result" exact>
+          <Result />
         </Route>
       </Switch>
     </Router>

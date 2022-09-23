@@ -9,6 +9,7 @@ import { SignalType } from "../signal-type";
 
 export class NetworkEntityController extends Component {
   private _socket: Colyseus.Room | null;
+  private _pubsubTokens: string[] = [];
 
   constructor() {
     super();
@@ -16,18 +17,32 @@ export class NetworkEntityController extends Component {
   }
 
   public InitComponent(): void {
-    PubSub.subscribe(SignalType.UPDATE_POSITION, (msg, position) => {
-      this.sendUpdatePosition(position);
-    });
-    PubSub.subscribe(SignalType.UPDATE_ROTATION, (msg, rotation) => {
-      this.sendUpdateRotation(rotation);
-    });
-    PubSub.subscribe(SignalType.UPDATE_STATE, (msg, state) => {
-      this.sendUpdateState(state);
-    });
-    PubSub.subscribe(SignalType.CATCH_THIEF, (msg, sessionId) => {
-      this.sendCatchThief(sessionId);
-    });
+    this._pubsubTokens.push(
+      PubSub.subscribe(SignalType.UPDATE_POSITION, (msg, position) => {
+        this.sendUpdatePosition(position);
+      })
+    );
+    this._pubsubTokens.push(
+      PubSub.subscribe(SignalType.UPDATE_ROTATION, (msg, rotation) => {
+        this.sendUpdateRotation(rotation);
+      })
+    );
+    this._pubsubTokens.push(
+      PubSub.subscribe(SignalType.UPDATE_STATE, (msg, state) => {
+        this.sendUpdateState(state);
+      })
+    );
+    this._pubsubTokens.push(
+      PubSub.subscribe(SignalType.CATCH_THIEF, (msg, sessionId) => {
+        this.sendCatchThief(sessionId);
+      })
+    );
+  }
+
+  public Dispose(): void {
+    for (const token of this._pubsubTokens) {
+      PubSub.unsubscribe(token);
+    }
   }
 
   private sendUpdatePosition(position: IVec3) {

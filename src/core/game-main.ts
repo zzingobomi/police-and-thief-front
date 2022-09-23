@@ -50,6 +50,10 @@ export class GameMain {
     this._gameStart();
   }
 
+  public Dispose() {
+    this._entityManager.Dispose();
+  }
+
   private _loadControllers() {
     const threejs = new Entity();
     threejs.AddComponent(new ThreeJSController(this._divContainer));
