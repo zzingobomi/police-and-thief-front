@@ -10,6 +10,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "@trixt0r/ecs": "^0.5.1",
     "@types/jest": "^27.5.2",
     "@types/node": "^16.11.56",
     "@types/pubsub-js": "^1.8.3",
@@ -21,6 +22,7 @@
     "apollo": "^2.31.1",
     "autoprefixer": "^10.0.2",
     "colyseus.js": "^0.14.13",
+    "ecsy": "^0.4.2",
     "graphql": "^15.4.0",
     "postcss": "^8.1.9",
     "pubsub-js": "^1.9.4",
@@ -38,6 +40,7 @@
     "three": "^0.144.0",
     "three-stdlib": "^2.15.0",
     "typescript": "^4.8.2",
+    "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -67,6 +70,7 @@
     ]
   },
   "devDependencies": {
+    "@types/uuid": "^8.3.4",
     "tailwindcss-text-fill-stroke": "^1.1.2"
   }
 }
