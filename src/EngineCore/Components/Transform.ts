@@ -1,4 +1,4 @@
-import { Component } from "@trixt0r/ecs";
+import { Component } from "../Core/component";
 import { Vector3 } from "three";
 
 export class Transform implements Component {

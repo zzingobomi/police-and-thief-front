@@ -1,4 +1,4 @@
-import { AbstractEntitySystem } from "@trixt0r/ecs";
+import { AbstractEntitySystem } from "../Core/system";
 import { Transform } from "../Components/Transform";
 import { MyEntity } from "../Entities/my-entity";
 

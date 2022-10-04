@@ -5,12 +5,17 @@ import { InGame } from "../pages/ingame/in-game";
 import { Lobby } from "../pages/lobby";
 import { Result } from "../pages/result";
 import { Room } from "../pages/room";
+import { World } from "../pages/world/world";
 
 export const LoggedInRouter = () => {
   return (
     <Router>
       <Switch>
         <Route path="/" exact>
+          <World />
+        </Route>
+
+        {/* <Route path="/" exact>
           <Lobby />
         </Route>
         <Route path="/create-room" exact>
@@ -24,7 +29,7 @@ export const LoggedInRouter = () => {
         </Route>
         <Route path="/result" exact>
           <Result />
-        </Route>
+        </Route> */}
       </Switch>
     </Router>
   );

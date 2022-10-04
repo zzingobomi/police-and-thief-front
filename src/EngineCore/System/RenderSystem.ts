@@ -1,6 +1,10 @@
-import { Aspect, System, Engine } from "@trixt0r/ecs";
+import { Aspect } from "../Core/aspect";
+import { System } from "../Core/system";
+import { Engine } from "../Core/engine";
 import { GltfRenderer } from "../Components/GltfRenderer";
 import { ThreeComponent } from "../Components/ThreeComponent";
+import { GameObject } from "../Entities/GameObject";
+import { ENTITY_THREE } from "../Constant/EntityName";
 
 export class RenderSystem extends System {
   private aspect: Aspect;
@@ -11,11 +15,13 @@ export class RenderSystem extends System {
   }
 
   onAddedToEngine(engine: Engine): void {
-    // TODO: ThreeComponent 를 좀 쉽게 얻어올 수 없을까..
     this.aspect = Aspect.for(engine).all(GltfRenderer);
-    this.threeComponent = Aspect.for(engine)
-      .one(ThreeComponent)
-      .entities[0].components.get(ThreeComponent);
+  }
+
+  init() {
+    this.threeComponent = GameObject.Find(ENTITY_THREE)?.components.get(
+      ThreeComponent
+    ) as ThreeComponent;
     const entities = this.aspect.entities;
     entities.forEach((entity) => {
       const renderer = entity.components.get(GltfRenderer);
@@ -23,5 +29,5 @@ export class RenderSystem extends System {
     });
   }
 
-  async process() {}
+  process() {}
 }

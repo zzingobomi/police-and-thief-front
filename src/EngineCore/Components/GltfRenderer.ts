@@ -1,4 +1,4 @@
-import { Component } from "@trixt0r/ecs";
+import { Component } from "../Core/component";
 import { GLTF, GLTFLoader } from "three-stdlib";
 import * as THREE from "three";
 

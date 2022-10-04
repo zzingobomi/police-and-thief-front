@@ -18,6 +18,7 @@ module.exports = {
   rules: {
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
     "react/require-render-return": "off",
     "react/react-in-jsx-scope": "off",
     "react/no-unescaped-entities": "off",

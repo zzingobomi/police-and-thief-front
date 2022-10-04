@@ -7,8 +7,8 @@ import { World } from "./pages/world/world";
 
 function App() {
   //const isLoggedIn = useReactiveVar(isLoggedInVar);
-  //return isLoggedIn ? <LoggedInRouter /> : <LoggedOutRouter />;
-  return <World />;
+  const isLoggedIn = true;
+  return isLoggedIn ? <LoggedInRouter /> : <LoggedOutRouter />;
 }
 
 export default App;

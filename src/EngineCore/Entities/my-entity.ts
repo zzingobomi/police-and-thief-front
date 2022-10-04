@@ -1,4 +1,4 @@
-import { AbstractEntity } from "@trixt0r/ecs";
+import { AbstractEntity } from "../Core/entity";
 
 let id = 1;
 

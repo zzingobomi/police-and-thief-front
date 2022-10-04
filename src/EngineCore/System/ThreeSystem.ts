@@ -1,18 +1,21 @@
-import { Aspect, System, Engine } from "@trixt0r/ecs";
+import { Aspect } from "../Core/aspect";
+import { System } from "../Core/system";
+import { Engine } from "../Core/engine";
 import { ThreeComponent } from "../Components/ThreeComponent";
+import { GameObject } from "../Entities/GameObject";
+import { ENTITY_THREE } from "../Constant/EntityName";
 
 export class ThreeSystem extends System {
-  private aspect: Aspect;
   private threeComponent: ThreeComponent;
 
   constructor() {
     super();
   }
 
-  onAddedToEngine(engine: Engine): void {
-    this.aspect = Aspect.for(engine).one(ThreeComponent);
-    this.threeComponent =
-      this.aspect.entities[0].components.get(ThreeComponent);
+  init() {
+    this.threeComponent = GameObject.Find(ENTITY_THREE)?.components.get(
+      ThreeComponent
+    ) as ThreeComponent;
 
     window.onresize = this.resize.bind(this);
     this.resize();
