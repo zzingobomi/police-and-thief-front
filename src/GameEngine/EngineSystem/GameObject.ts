@@ -1,27 +1,22 @@
+import { Object3D } from "three";
 import { Component } from "./Component";
 
 interface IComponentMap {
   [key: string]: Component;
 }
 
-export class GameObject {
+export class GameObject extends Object3D {
   private active = true;
   private enable = true;
-  private name: string;
   private tag?: string;
-  private parent: GameObject;
   private components: IComponentMap = {};
 
-  static nameMap: Map<string, GameObject> = new Map();
-
   constructor(name: string, tag?: string) {
+    super();
     this.name = name;
     this.tag = tag;
-
-    GameObject.nameMap.set(name, this);
   }
 
-  public Awake() {}
   public Start() {
     for (const key in this.components) {
       this.components[key].Start();
@@ -30,11 +25,6 @@ export class GameObject {
   public Update(delta: number) {
     for (const key in this.components) {
       this.components[key].Update(delta);
-    }
-  }
-  public Render() {
-    for (const key in this.components) {
-      this.components[key].Render();
     }
   }
   public Dispose() {
@@ -47,8 +37,8 @@ export class GameObject {
     component.GameObject = this;
     this.components[component.constructor.name] = component;
   }
-  public GetComponent(name: string) {
-    return this.components[name];
+  public GetComponent(component: new () => Component) {
+    return this.components[component.name];
   }
   public RemoveComponent(name: string) {
     if (this.components[name]) {
@@ -80,8 +70,7 @@ export class GameObject {
   get Tag(): string | undefined {
     return this.tag;
   }
-
-  static Find(name: string) {
-    return this.nameMap.get(name);
+  get Uuid() {
+    return this.uuid;
   }
 }

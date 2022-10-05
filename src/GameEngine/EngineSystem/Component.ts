@@ -1,15 +1,15 @@
 import { GameObject } from "./GameObject";
 
 export class Component {
-  private gameObject: GameObject;
+  protected gameObject: GameObject;
 
   public Start() {}
   public Update(delta: number) {}
-  public Render() {}
   public Dispose() {}
 
-  // TODO:
-  //public GetComponent
+  public GetComponent(component: typeof Component) {
+    return this.gameObject.GetComponent(component);
+  }
 
   set GameObject(obj: GameObject) {
     this.gameObject = obj;
