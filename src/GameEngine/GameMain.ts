@@ -9,6 +9,8 @@ import { PhysicsManager } from "./PhysicsSystem/PhysicsManager";
 import { ManagerStore } from "./Utils/ManagerStore";
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
+import { SphereCollider } from "./EngineSystem/Components/SphereCollider";
+import { MeshCollider } from "./EngineSystem/Components/MeshCollider";
 
 export class GameMain {
   private previousTime = 0;
@@ -51,26 +53,35 @@ export class GameMain {
     floor.receiveShadow = true;
     floor.rotation.x = -Math.PI * 0.5;
     world.AddComponent(new MeshRenderer(floor));
-    world.AddComponent(
-      new Rigidbody({
-        shape: new CANNON.Plane(),
-        mass: 0,
-      })
-    );
+    world.AddComponent(new MeshCollider(floor));
+    //world.AddComponent(new Rigidbody(0));
 
+    // const myPlayer =
+    //   ManagerStore.GetManager(GameObjectManager).CreateGameObject("myPlayer");
+    // myPlayer.AddComponent(new Transform());
+    // myPlayer.AddComponent(new GltfRenderer("./glb/box_man.glb"));
+    // myPlayer.AddComponent(
+    //   new Rigidbody({
+    //     // shape: new CANNON.Box(),
+    //     // radius: 0.25,
+    //     // width: 0.5,
+    //     // offset: { y: -0.25 },
+    //   })
+    // );
+    // myPlayer.GetComponent(Transform).SetPosition(-1, 0, 0);
     const myPlayer =
       ManagerStore.GetManager(GameObjectManager).CreateGameObject("myPlayer");
     myPlayer.AddComponent(new Transform());
-    myPlayer.AddComponent(new GltfRenderer("./glb/box_man.glb"));
-    myPlayer.AddComponent(
-      new Rigidbody({
-        // shape: new CANNON.Box(),
-        // radius: 0.25,
-        // width: 0.5,
-        // offset: { y: -0.25 },
+    const player = new THREE.Mesh(
+      new THREE.SphereGeometry(1),
+      new THREE.MeshStandardMaterial({
+        color: "#777777",
       })
     );
-    myPlayer.GetComponent(Transform).SetPosition(-1, 0, 0);
+    myPlayer.AddComponent(new MeshRenderer(player));
+    myPlayer.AddComponent(new SphereCollider());
+    myPlayer.AddComponent(new Rigidbody(1));
+    myPlayer.GetComponent(Transform).SetPosition(0, 5, 0);
 
     //console.log(this.renderingManager.scene);
 

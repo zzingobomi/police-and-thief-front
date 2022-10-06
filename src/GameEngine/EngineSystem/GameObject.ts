@@ -37,7 +37,9 @@ export class GameObject extends Object3D {
     component.GameObject = this;
     this.components[component.constructor.name] = component;
   }
-  public GetComponent<T extends Component>(componentType: new () => T): T {
+  public GetComponent<T extends Component>(
+    componentType: new (...args: any[]) => T
+  ): T {
     return this.components[componentType.name] as T;
   }
   public RemoveComponent(name: string) {
