@@ -82,13 +82,13 @@ export class RenderingManager extends Manager {
   }
   private initMainCamera() {
     const camera = new THREE.PerspectiveCamera(
-      60,
+      75,
       window.innerWidth / window.innerHeight,
-      0.005,
-      10000
+      0.1,
+      1000
     );
 
-    camera.position.set(0, 1, 2);
+    camera.position.set(0, 3, 6);
     this.camera = camera;
   }
   private initLight() {

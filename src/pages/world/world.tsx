@@ -14,9 +14,7 @@ export const World = () => {
     if (isMounted) {
       if (container.current && container.current.children.length > 0) return;
       world.current = new GameMain();
-      debugWorld.current = new DebugMain(
-        world.current.GetRenderingManager().scene
-      );
+      debugWorld.current = new DebugMain();
     }
 
     return () => {
