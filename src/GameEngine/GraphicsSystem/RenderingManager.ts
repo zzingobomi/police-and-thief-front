@@ -1,6 +1,7 @@
 import { PerspectiveCamera, Scene, WebGLRenderer } from "three";
 import * as THREE from "three";
 import { GameMain } from "../GameMain";
+import { Manager } from "../Utils/Manager";
 
 const vertexShader = `
   varying vec3 vWorldPosition;
@@ -25,16 +26,14 @@ const fragmentShader = `
     gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 );
   }`;
 
-export class RenderingManager {
-  private gameMain: GameMain;
-
+export class RenderingManager extends Manager {
   public divContainer: HTMLDivElement;
   public renderer: WebGLRenderer;
   public camera: PerspectiveCamera;
   public scene: Scene;
 
-  constructor(gameMain: GameMain) {
-    this.gameMain = gameMain;
+  constructor() {
+    super();
     this.divContainer = document.querySelector("#container") as HTMLDivElement;
 
     this.initRenderer();
@@ -46,6 +45,8 @@ export class RenderingManager {
     window.onresize = this.resize.bind(this);
     this.resize();
   }
+
+  public Start() {}
 
   private initRenderer() {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -109,7 +110,7 @@ export class RenderingManager {
     this.renderer.setSize(width, height);
   }
 
-  public Render(delta: number) {
+  public Update(delta: number) {
     this.renderer.render(this.scene, this.camera);
   }
 

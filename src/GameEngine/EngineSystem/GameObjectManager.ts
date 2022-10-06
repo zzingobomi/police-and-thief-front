@@ -1,37 +1,38 @@
 import { GameMain } from "../GameMain";
+import { RenderingManager } from "../GraphicsSystem/RenderingManager";
+import { Manager } from "../Utils/Manager";
+import { ManagerStore } from "../Utils/ManagerStore";
 import { GameObject } from "./GameObject";
 
-export class GameObjectManager {
-  private gameMain: GameMain;
-
+export class GameObjectManager extends Manager {
   private gameObjects: GameObject[] = [];
   static gameObjectMap: Map<string, GameObject> = new Map();
 
-  constructor(gameMain: GameMain) {
-    this.gameMain = gameMain;
+  constructor() {
+    super();
   }
 
   public CreateGameObject(name: string, tag?: string) {
     const gameObject = new GameObject(name, tag);
     this.gameObjects.push(gameObject);
     GameObjectManager.gameObjectMap.set(name, gameObject);
-    this.gameMain.GetRenderingManager().scene.add(gameObject);
+    ManagerStore.GetManager(RenderingManager).scene.add(gameObject);
     return gameObject;
   }
 
-  public Start() {
+  public Start(): void {
     for (const gameObject of this.gameObjects) {
       gameObject.Start();
     }
   }
 
-  public Update(delta: number) {
+  public Update(delta: number): void {
     for (const gameObject of this.gameObjects) {
       gameObject.Update(delta);
     }
   }
 
-  public Dispose() {
+  public Dispose(): void {
     for (const gameObject of this.gameObjects) {
       gameObject.Dispose();
     }
