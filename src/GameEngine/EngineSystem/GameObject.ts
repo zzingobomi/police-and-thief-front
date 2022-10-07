@@ -38,9 +38,18 @@ export class GameObject extends Object3D {
     this.components[component.constructor.name] = component;
   }
   public GetComponent<T extends Component>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     componentType: new (...args: any[]) => T
-  ): T {
-    return this.components[componentType.name] as T;
+  ): T | undefined {
+    if (this.components[componentType.name]) {
+      return this.components[componentType.name] as T;
+    } else {
+      for (const key in this.components) {
+        if (this.components[key] instanceof componentType) {
+          return this.components[key] as T;
+        }
+      }
+    }
   }
   public RemoveComponent(name: string) {
     if (this.components[name]) {

@@ -26,6 +26,43 @@ export class GameMain {
     this.managerStore.AddManager(new InputManager());
     this.managerStore.AddManager(new GameObjectManager());
 
+    // test code
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(10, 10),
+      new THREE.MeshStandardMaterial({
+        color: "#777777",
+        metalness: 0.3,
+        roughness: 0.4,
+      })
+    );
+    floor.receiveShadow = true;
+
+    const world =
+      ManagerStore.GetManager(GameObjectManager).CreateGameObject("world");
+    world.AddComponent(new Transform());
+    world.AddComponent(new MeshRenderer(floor));
+    world.AddComponent(new MeshCollider(floor));
+    world.AddComponent(new Rigidbody(0));
+
+    const worldTransform = world.GetComponent(Transform);
+    if (worldTransform) worldTransform.SetRotation(-Math.PI * 0.5, 0, 0);
+
+    const myPlayer =
+      ManagerStore.GetManager(GameObjectManager).CreateGameObject("myPlayer");
+    myPlayer.AddComponent(new Transform());
+    const player = new THREE.Mesh(
+      new THREE.SphereGeometry(1),
+      new THREE.MeshStandardMaterial({
+        color: "#777777",
+      })
+    );
+    myPlayer.AddComponent(new MeshRenderer(player));
+    myPlayer.AddComponent(new SphereCollider());
+    myPlayer.AddComponent(new Rigidbody(1));
+
+    const myPlayerTransform = myPlayer.GetComponent(Transform);
+    if (myPlayerTransform) myPlayerTransform.SetPosition(0, 10, 0);
+
     // temp
     // const world =
     //   ManagerStore.GetManager(GameObjectManager).CreateGameObject("world");
@@ -39,22 +76,6 @@ export class GameMain {
     //     autoCenter: false,
     //   })
     // );
-    const world =
-      ManagerStore.GetManager(GameObjectManager).CreateGameObject("world");
-    world.AddComponent(new Transform());
-    const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(10, 10),
-      new THREE.MeshStandardMaterial({
-        color: "#777777",
-        metalness: 0.3,
-        roughness: 0.4,
-      })
-    );
-    floor.receiveShadow = true;
-    floor.rotation.x = -Math.PI * 0.5;
-    world.AddComponent(new MeshRenderer(floor));
-    world.AddComponent(new MeshCollider(floor));
-    //world.AddComponent(new Rigidbody(0));
 
     // const myPlayer =
     //   ManagerStore.GetManager(GameObjectManager).CreateGameObject("myPlayer");
@@ -69,19 +90,6 @@ export class GameMain {
     //   })
     // );
     // myPlayer.GetComponent(Transform).SetPosition(-1, 0, 0);
-    const myPlayer =
-      ManagerStore.GetManager(GameObjectManager).CreateGameObject("myPlayer");
-    myPlayer.AddComponent(new Transform());
-    const player = new THREE.Mesh(
-      new THREE.SphereGeometry(1),
-      new THREE.MeshStandardMaterial({
-        color: "#777777",
-      })
-    );
-    myPlayer.AddComponent(new MeshRenderer(player));
-    myPlayer.AddComponent(new SphereCollider());
-    myPlayer.AddComponent(new Rigidbody(1));
-    myPlayer.GetComponent(Transform).SetPosition(0, 5, 0);
 
     //console.log(this.renderingManager.scene);
 

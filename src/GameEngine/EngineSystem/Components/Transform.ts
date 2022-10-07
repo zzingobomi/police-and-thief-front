@@ -1,4 +1,4 @@
-import { Euler, Vector3 } from "three";
+import { Euler, Quaternion, Vector3 } from "three";
 import { Component } from "../Component";
 
 export class Transform extends Component {
@@ -14,6 +14,13 @@ export class Transform extends Component {
   }
   public SetRotation(x: number, y: number, z: number) {
     this.gameObject.rotation.set(x, y, z);
+  }
+
+  public GetQuaternion() {
+    return this.gameObject.quaternion;
+  }
+  public SetQuaternion(x: number, y: number, z: number, w: number) {
+    this.gameObject.quaternion.set(x, y, z, w);
   }
 
   public GetScale() {
@@ -35,6 +42,18 @@ export class Transform extends Component {
   }
   set Rotation(rotation: Euler) {
     this.gameObject.rotation.set(rotation.x, rotation.y, rotation.z);
+  }
+
+  get Quaternion() {
+    return this.gameObject.quaternion;
+  }
+  set Quaternion(quaternion: Quaternion) {
+    this.gameObject.quaternion.set(
+      quaternion.x,
+      quaternion.y,
+      quaternion.z,
+      quaternion.w
+    );
   }
 
   get Scale() {

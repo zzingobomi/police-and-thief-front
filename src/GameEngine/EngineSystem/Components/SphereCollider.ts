@@ -2,7 +2,6 @@ import { Collider } from "./Collider";
 import * as CANNON from "cannon-es";
 
 export class SphereCollider extends Collider {
-  private center: CANNON.Vec3 = new CANNON.Vec3();
   private radius: number;
 
   constructor(radius?: number) {
@@ -16,13 +15,6 @@ export class SphereCollider extends Collider {
 
   public Dispose() {
     // TODO:
-  }
-
-  get Center() {
-    return this.center;
-  }
-  set Center(center: CANNON.Vec3) {
-    this.center = center;
   }
 
   get Radius() {

@@ -1,4 +1,3 @@
-import { GameMain } from "../GameMain";
 import { Manager } from "../Utils/Manager";
 import * as CANNON from "cannon-es";
 
@@ -26,24 +25,9 @@ export class PhysicsManager extends Manager {
     this.world.defaultContactMaterial = defaultContactMaterial;
   }
 
-  public Update(delta: number): void {}
+  public Update(delta: number): void {
+    this.world.step(1 / 60, delta, 3);
+  }
 
   public Dispose(): void {}
 }
-
-// export class PhysicsManager extends Manager {
-//   private gameMain: GameMain;
-//   public physics: AmmoPhysics;
-
-//   constructor(gameMain: GameMain) {
-//     this.gameMain = gameMain;
-//     PhysicsLoader("/lib/ammo/moz", () => {
-//       this.physics = new AmmoPhysics(this.gameMain.GetRenderingManager().scene);
-//       this.physics.debug?.enable();
-//     });
-//   }
-
-//   Update(delta: number) {
-//     if (this.physics) this.physics.update(delta);
-//   }
-// }

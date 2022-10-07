@@ -11,6 +11,7 @@ export class Component {
   //   return this.gameObject.GetComponent(component);
   // }
   public GetComponent<T extends Component>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     componentType: new (...args: any[]) => T
   ): T {
     return this.gameObject.GetComponent(componentType) as T;
