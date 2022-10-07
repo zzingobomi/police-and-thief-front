@@ -33,6 +33,11 @@ export class GameObject extends Object3D {
     }
   }
 
+  // public AddGameObject(): GameObject {
+  //   this.add
+  //   return this;
+  // }
+
   public AddComponent(component: Component) {
     component.GameObject = this;
     this.components[component.constructor.name] = component;

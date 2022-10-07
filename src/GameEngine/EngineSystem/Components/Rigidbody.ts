@@ -16,7 +16,6 @@ export class Rigidbody extends Component {
   }
 
   public Start() {
-    console.log(this.gameObject.quaternion);
     const collider = this.GetComponent(Collider);
     if (collider) {
       this.body = new CANNON.Body({
