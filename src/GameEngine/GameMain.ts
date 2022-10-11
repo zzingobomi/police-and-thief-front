@@ -34,14 +34,16 @@ export class GameMain {
   }
 
   private start() {
-    // TODO: Unity를 보고 이 구조를 어떻게 해야 좋을지 생각해보자..
-    // (AssetManager.Find("book") as THREE.Group).traverse(
-    //   (child: Object3D<THREE.Event>) => {
-    //     if (child instanceof THREE.Mesh) {
-    //       console.log(child);
-    //     }
-    //   }
-    // );
+    ManagerStore.GetManager(GameObjectManager).loadGlbGameObject(
+      "world",
+      AssetManager.Find("book")
+    );
+
+    // mesh collider 가 아님..
+    ManagerStore.GetManager(GameObjectManager).loadGlbGameObject(
+      "man",
+      AssetManager.Find("man")
+    );
 
     // const world =
     //   ManagerStore.GetManager(GameObjectManager).CreateGameObject("world");

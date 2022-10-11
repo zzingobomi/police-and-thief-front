@@ -43,10 +43,10 @@ export class AssetManager extends Manager {
 
     // TODO: animation 정보도 저장해야함..
     const book = await this.gltfLoader.loadAsync("./glb/book.glb");
-    AssetManager.AddAsset("book", book.scene);
+    AssetManager.AddAsset("book", book);
 
     const man = await this.gltfLoader.loadAsync("./glb/box_man.glb");
-    AssetManager.AddAsset("man", man.scene);
+    AssetManager.AddAsset("man", man);
 
     PubSub.publish(SignalType.ASSETS_LOADED);
   }
