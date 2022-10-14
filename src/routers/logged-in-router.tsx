@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { CreateRoom } from "../pages/create-room";
 import { InGame } from "../pages/ingame/in-game";
 import { Lobby } from "../pages/lobby";
+import { Metaverse } from "../pages/metaverse/metaverse";
 import { Result } from "../pages/result";
 import { Room } from "../pages/room";
 import { World } from "../pages/world/world";
@@ -12,8 +13,11 @@ export const LoggedInRouter = () => {
     <Router>
       <Switch>
         <Route path="/" exact>
-          <World />
+          <Metaverse />
         </Route>
+        {/* <Route path="/" exact>
+          <World />
+        </Route> */}
 
         {/* <Route path="/" exact>
           <Lobby />

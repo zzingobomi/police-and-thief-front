@@ -40,6 +40,7 @@
     "rimraf": "^3.0.2",
     "tailwindcss": "^2.0.1",
     "three": "^0.144.0",
+    "three-csm": "^2.0.0",
     "three-stdlib": "^2.15.0",
     "typescript": "^4.8.2",
     "uuid": "^9.0.0",
@@ -47,7 +48,7 @@
   },
   "scripts": {
     "tailwind:build": "tailwind build ./src/styles/tailwind.css -o ./src/styles/styles.css",
-    "start": "SET PORT=7000 && npm run apollo:codegen & npm run tailwind:build & react-scripts start",
+    "start": "SET PORT=7000 && npm run tailwind:build & react-scripts start",
     "apollo:codegen": "rimraf src/__generated__ && apollo client:codegen src/__generated__ --target=typescript --outputFlat",
     "build": "react-scripts build",
     "test": "react-scripts test",
