@@ -69,6 +69,7 @@ export class RenderingManager extends Manager {
       exponent: { value: 0.6 },
     };
 
+    // TODO: sky 다시 확인
     const skyGeo = new THREE.SphereGeometry(500, 32, 15);
     const skyMat = new THREE.ShaderMaterial({
       uniforms: uniforms,

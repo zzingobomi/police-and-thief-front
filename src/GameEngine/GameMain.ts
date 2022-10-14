@@ -14,6 +14,9 @@ import { MeshCollider } from "./EngineSystem/Components/MeshCollider";
 import { AssetManager } from "./AssetSystem/AssetManager";
 import { SignalType } from "./Enums/SignalType";
 import { Object3D } from "three";
+import { GameObject } from "./EngineSystem/GameObject";
+import { GLTF } from "three-stdlib";
+import { BODY_TYPES } from "cannon-es";
 
 export class GameMain {
   private previousTime = 0;
@@ -34,31 +37,7 @@ export class GameMain {
   }
 
   private start() {
-    ManagerStore.GetManager(GameObjectManager).loadGlbGameObject(
-      "world",
-      AssetManager.Find("book")
-    );
-
-    // mesh collider 가 아님..
-    ManagerStore.GetManager(GameObjectManager).loadGlbGameObject(
-      "man",
-      AssetManager.Find("man")
-    );
-
-    // const world =
-    //   ManagerStore.GetManager(GameObjectManager).CreateGameObject("world");
-    // world.traverse((child: Object3D<THREE.Event>) => {
-    //   if (child instanceof THREE.Mesh) {
-    //     console.log(child);
-    //   }
-    // });
-
-    //world.AddComponent(new MeshRenderer(AssetManager.Find("book")));
-    // 1. 하니의 메시로 합친다.. 이건 옵션으로 줘야할거 같고..
-    // 2. 쭉 돌면서 mesh라면 gameObject 를 생성한다.
-    // 3. glb 를 하나씩만 받아오도록..? 아냐... three 자체가 하이어라키 구조인데..
-    //world.AddComponent(new MeshCollider(AssetManager.Find("book")));
-    //world.AddComponent(new Rigidbody(0));
+    this.initGameObject();
 
     // test code
     // const world =
@@ -74,13 +53,82 @@ export class GameMain {
     //   ManagerStore.GetManager(GameObjectManager).CreateGameObject("shpere");
     // shpere.AddComponent(new MeshRenderer(AssetManager.Find("shpere")));
     // shpere.AddComponent(new SphereCollider());
-    // shpere.AddComponent(new Rigidbody(1));
+    // shpere.AddComponent(new Rigidbody(1, BODY_TYPES.DYNAMIC));
 
     // const shpereTransform = shpere.GetComponent(Transform);
     // if (shpereTransform) shpereTransform.SetPosition(0, 10, 0);
 
     this.managerStore.Start();
     requestAnimationFrame(this.Render.bind(this));
+  }
+
+  private initGameObject() {
+    this.createWorldObject();
+    //this.createBookObject();
+    //this.createManObject();
+  }
+
+  private createWorldObject() {
+    const glb = AssetManager.Find("world") as GLTF;
+    const name = "world";
+    const glbGameObject = new GameObject(name);
+    const glbTransform = new Transform();
+    glbGameObject.AddComponent(glbTransform);
+    glbGameObject.add(glb.scene);
+    ManagerStore.GetManager(GameObjectManager).AddGameObject(glbGameObject);
+    GameObjectManager.gameObjectMap.set(name, glbGameObject);
+    ManagerStore.GetManager(RenderingManager).scene.add(glbGameObject);
+  }
+
+  private createBookObject() {
+    const glb = AssetManager.Find("book") as GLTF;
+    const name = "book";
+    const glbGameObject = new GameObject(name);
+    const glbTransform = new Transform();
+    glbGameObject.AddComponent(glbTransform);
+    glb.scene.getWorldPosition(glbTransform.Position);
+    glb.scene.getWorldQuaternion(glbTransform.Quaternion);
+    glb.scene.getWorldScale(glbTransform.Scale);
+    glbGameObject.add(glb.scene);
+    ManagerStore.GetManager(GameObjectManager).AddGameObject(glbGameObject);
+    GameObjectManager.gameObjectMap.set(name, glbGameObject);
+    glb.scene.traverse((child) => {
+      if (child instanceof THREE.Group || child instanceof THREE.Mesh) {
+        //const childName = `${child.name}_${this.generateGameObjectName()}`;
+        const childName = `${child.name}`;
+        const childObject = new GameObject(childName);
+        const childTransform = new Transform();
+        childObject.AddComponent(childTransform);
+        child.getWorldPosition(childTransform.Position);
+        child.getWorldQuaternion(childTransform.Quaternion);
+        child.getWorldScale(childTransform.Scale);
+        if (child instanceof THREE.Mesh) {
+          childObject.AddComponent(new MeshCollider(child));
+          childObject.AddComponent(new Rigidbody(0));
+        }
+        ManagerStore.GetManager(GameObjectManager).AddGameObject(childObject);
+        GameObjectManager.gameObjectMap.set(name, childObject);
+      }
+    });
+
+    ManagerStore.GetManager(RenderingManager).scene.add(glbGameObject);
+  }
+
+  private createManObject() {
+    const glb = AssetManager.Find("man") as GLTF;
+    const name = "man";
+    const glbGameObject = new GameObject(name);
+    const glbTransform = new Transform();
+    glbGameObject.AddComponent(glbTransform);
+    glb.scene.getWorldPosition(glbTransform.Position);
+    glb.scene.getWorldQuaternion(glbTransform.Quaternion);
+    glb.scene.getWorldScale(glbTransform.Scale);
+    glbGameObject.AddComponent(new SphereCollider());
+    glbGameObject.AddComponent(new Rigidbody(1, BODY_TYPES.DYNAMIC));
+    glbGameObject.add(glb.scene);
+    ManagerStore.GetManager(GameObjectManager).AddGameObject(glbGameObject);
+    GameObjectManager.gameObjectMap.set(name, glbGameObject);
+    ManagerStore.GetManager(RenderingManager).scene.add(glbGameObject);
   }
 
   public Render(time: number) {

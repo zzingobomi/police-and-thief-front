@@ -41,7 +41,9 @@ export class AssetManager extends Manager {
     );
     AssetManager.AddAsset("shpere", shpere);
 
-    // TODO: animation 정보도 저장해야함..
+    const world = await this.gltfLoader.loadAsync("./glb/world.glb");
+    AssetManager.AddAsset("world", world);
+
     const book = await this.gltfLoader.loadAsync("./glb/book.glb");
     AssetManager.AddAsset("book", book);
 
