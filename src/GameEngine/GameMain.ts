@@ -9,8 +9,8 @@ import { PhysicsManager } from "./PhysicsSystem/PhysicsManager";
 import { ManagerStore } from "./Utils/ManagerStore";
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
-import { SphereCollider } from "./EngineSystem/Components/SphereCollider";
-import { MeshCollider } from "./EngineSystem/Components/MeshCollider";
+import { SphereCollider } from "./EngineSystem/Components/Collider/SphereCollider";
+import { MeshCollider } from "./EngineSystem/Components/Collider/MeshCollider";
 import { AssetManager } from "./AssetSystem/AssetManager";
 import { SignalType } from "./Enums/SignalType";
 import { Object3D } from "three";
@@ -69,15 +69,30 @@ export class GameMain {
   }
 
   private createWorldObject() {
-    const glb = AssetManager.Find("world") as GLTF;
+    // TODO: Transform 컴포넌트 삭제하기..
+
+    const world = AssetManager.Find("world") as GLTF;
     const name = "world";
-    const glbGameObject = new GameObject(name);
-    const glbTransform = new Transform();
-    glbGameObject.AddComponent(glbTransform);
-    glbGameObject.add(glb.scene);
-    ManagerStore.GetManager(GameObjectManager).AddGameObject(glbGameObject);
-    GameObjectManager.gameObjectMap.set(name, glbGameObject);
-    ManagerStore.GetManager(RenderingManager).scene.add(glbGameObject);
+    const worldObject = new GameObject(name);
+    worldObject.add(world.scene);
+    world.scene.traverse((child) => {
+      if (child.hasOwnProperty("userData")) {
+        if (child.userData.hasOwnProperty("data")) {
+          if (child.userData.data === "physics") {
+            if (child.userData.hasOwnProperty("type")) {
+              if (child.userData.type === "box") {
+                // TODO:
+              } else if (child.userData.type === "trimesh") {
+                // TODO:
+              }
+            }
+          }
+        }
+      }
+    });
+    ManagerStore.GetManager(GameObjectManager).AddGameObject(worldObject);
+    GameObjectManager.gameObjectMap.set(name, worldObject);
+    ManagerStore.GetManager(RenderingManager).scene.add(worldObject);
   }
 
   private createBookObject() {

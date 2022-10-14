@@ -1,5 +1,5 @@
 import { Collider } from "./Collider";
-import CannonUtils from "../../Utils/CannonUtils";
+import CannonUtils from "../../../Utils/CannonUtils";
 
 export class MeshCollider extends Collider {
   private mesh: THREE.Mesh;

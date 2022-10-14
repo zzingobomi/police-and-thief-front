@@ -6,7 +6,7 @@ import { GameObject } from "./GameObject";
 import * as THREE from "three";
 import { GLTF } from "three-stdlib";
 import { Rigidbody } from "./Components/Rigidbody";
-import { MeshCollider } from "./Components/MeshCollider";
+import { MeshCollider } from "./Components/Collider/MeshCollider";
 
 export class GameObjectManager extends Manager {
   private gameObjects: GameObject[] = [];

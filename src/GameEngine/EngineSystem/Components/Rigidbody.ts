@@ -2,7 +2,7 @@ import { Component } from "../Component";
 import * as CANNON from "cannon-es";
 import { ManagerStore } from "../../Utils/ManagerStore";
 import { PhysicsManager } from "../../PhysicsSystem/PhysicsManager";
-import { Collider } from "./Collider";
+import { Collider } from "./Collider/Collider";
 import CannonUtils from "../../Utils/CannonUtils";
 import { Transform } from "./Transform";
 import { BodyType, BODY_TYPES } from "cannon-es";
@@ -27,7 +27,7 @@ export class Rigidbody extends Component {
         shape: collider.shape,
         position: CannonUtils.Three2Cannon()
           .vector3(this.gameObject.position)
-          .vadd(collider.Center),
+          .vadd(collider.center),
         quaternion: CannonUtils.Three2Cannon().quaternion(
           this.gameObject.quaternion
         ),
