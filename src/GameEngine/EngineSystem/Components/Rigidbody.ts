@@ -25,12 +25,9 @@ export class Rigidbody extends Component {
         mass: this.mass,
         type: this.type,
         shape: collider.shape,
-        position: CannonUtils.Three2Cannon()
-          .vector3(this.gameObject.position)
-          .vadd(collider.center),
-        quaternion: CannonUtils.Three2Cannon().quaternion(
-          this.gameObject.quaternion
-        ),
+        position: CannonUtils.cannonVector(this.gameObject.position)
+        .vadd(collider.center),
+        quaternion: CannonUtils.cannonQuat(this.gameObject.quaternion),
       });
       this.body.addEventListener("collide", this.onCollide);
 
@@ -44,12 +41,8 @@ export class Rigidbody extends Component {
     //}
     const transform = this.GetComponent(Transform);
     if (transform) {
-      transform.Position = CannonUtils.Cannon2Three().vector3(
-        this.body.position
-      );
-      transform.Quaternion = CannonUtils.Cannon2Three().quaternion(
-        this.body.quaternion
-      );
+      transform.Position = CannonUtils.threeVector(this.body.position);
+      transform.Quaternion = CannonUtils.threeQuat(this.body.quaternion);
     }
   }
 

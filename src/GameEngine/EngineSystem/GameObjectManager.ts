@@ -17,15 +17,17 @@ export class GameObjectManager extends Manager {
     super();
   }
 
-  // public CreateGameObject(name?: string, tag?: string) {
-  //   if (!name) name = this.generateGameObjectName();
-  //   const gameObject = new GameObject(name, tag);
-  //   gameObject.AddComponent(new Transform());
-  //   this.gameObjects.push(gameObject);
-  //   GameObjectManager.gameObjectMap.set(name, gameObject);
-  //   ManagerStore.GetManager(RenderingManager).scene.add(gameObject);
-  //   return gameObject;
-  // }
+  public CreateGameObject(name?: string, tag?: string) {
+    if (!name) name = this.generateGameObjectName();
+    const gameObject = new GameObject(name, tag);
+    //gameObject.AddComponent(new Transform());
+    this.gameObjects.push(gameObject);
+    GameObjectManager.gameObjectMap.set(name, gameObject);
+    //ManagerStore.GetManager(RenderingManager).scene.add(gameObject);
+    return gameObject;
+  }
+
+  public SetTransform() {}
 
   public AddGameObject(object: GameObject) {
     this.gameObjects.push(object);

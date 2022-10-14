@@ -11,21 +11,37 @@ interface Face3 {
 }
 
 class CannonUtils {
-  static Three2Cannon() {
-    return {
-      vector3: ({ x, y, z }: THREE.Vector3) => new CANNON.Vec3(x, y, z),
-      quaternion: ({ x, y, z, w }: THREE.Quaternion) =>
-        new CANNON.Quaternion(x, y, z, w),
-    };
+  public static threeVector(vec: CANNON.Vec3): THREE.Vector3 {
+    return new THREE.Vector3(vec.x, vec.y, vec.z);
   }
 
-  static Cannon2Three() {
-    return {
-      vector3: ({ x, y, z }: CANNON.Vec3) => new THREE.Vector3(x, y, z),
-      quaternion: ({ x, y, z, w }: CANNON.Quaternion) =>
-        new THREE.Quaternion(x, y, z, w),
-    };
+  public static cannonVector(vec: THREE.Vector3): CANNON.Vec3 {
+    return new CANNON.Vec3(vec.x, vec.y, vec.z);
   }
+
+  public static threeQuat(quat: CANNON.Quaternion): THREE.Quaternion {
+    return new THREE.Quaternion(quat.x, quat.y, quat.z, quat.w);
+  }
+
+  public static cannonQuat(quat: THREE.Quaternion): CANNON.Quaternion {
+    return new CANNON.Quaternion(quat.x, quat.y, quat.z, quat.w);
+  }
+
+  // static Three2Cannon() {
+  //   return {
+  //     vector3: ({ x, y, z }: THREE.Vector3) => new CANNON.Vec3(x, y, z),
+  //     quaternion: ({ x, y, z, w }: THREE.Quaternion) =>
+  //       new CANNON.Quaternion(x, y, z, w),
+  //   };
+  // }
+
+  // static Cannon2Three() {
+  //   return {
+  //     vector3: ({ x, y, z }: CANNON.Vec3) => new THREE.Vector3(x, y, z),
+  //     quaternion: ({ x, y, z, w }: CANNON.Quaternion) =>
+  //       new THREE.Quaternion(x, y, z, w),
+  //   };
+  // }
 
   public static CreateTrimesh(geometry: THREE.BufferGeometry): CANNON.Trimesh {
     let vertices;

@@ -11,9 +11,10 @@ import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { SphereCollider } from "./EngineSystem/Components/Collider/SphereCollider";
 import { MeshCollider } from "./EngineSystem/Components/Collider/MeshCollider";
+import { BoxCollider } from "./EngineSystem/Components/Collider/BoxCollider";
 import { AssetManager } from "./AssetSystem/AssetManager";
 import { SignalType } from "./Enums/SignalType";
-import { Object3D } from "three";
+import { Mesh, Object3D } from "three";
 import { GameObject } from "./EngineSystem/GameObject";
 import { GLTF } from "three-stdlib";
 import { BODY_TYPES } from "cannon-es";
@@ -72,8 +73,9 @@ export class GameMain {
     // TODO: Transform 컴포넌트 삭제하기..
 
     const world = AssetManager.Find("world") as GLTF;
-    const name = "world";
-    const worldObject = new GameObject(name);
+
+    const worldObject =
+      ManagerStore.GetManager(GameObjectManager).CreateGameObject("world");
     worldObject.add(world.scene);
     world.scene.traverse((child) => {
       if (child.hasOwnProperty("userData")) {
@@ -81,70 +83,86 @@ export class GameMain {
           if (child.userData.data === "physics") {
             if (child.userData.hasOwnProperty("type")) {
               if (child.userData.type === "box") {
-                // TODO:
+                const childObject =
+                  ManagerStore.GetManager(GameObjectManager).CreateGameObject();
+
+                childObject.AddComponent(
+                  new BoxCollider({
+                    size: new THREE.Vector3(
+                      child.scale.x,
+                      child.scale.y,
+                      child.scale.z
+                    ),
+                  })
+                );
               } else if (child.userData.type === "trimesh") {
-                // TODO:
+                // if (child instanceof Mesh) {
+                //   const childObject =
+                //     ManagerStore.GetManager(
+                //       GameObjectManager
+                //     ).CreateGameObject();
+                //   childObject.AddComponent(new MeshCollider(child));
+                // }
               }
             }
           }
         }
       }
     });
-    ManagerStore.GetManager(GameObjectManager).AddGameObject(worldObject);
-    GameObjectManager.gameObjectMap.set(name, worldObject);
+
     ManagerStore.GetManager(RenderingManager).scene.add(worldObject);
   }
 
-  private createBookObject() {
-    const glb = AssetManager.Find("book") as GLTF;
-    const name = "book";
-    const glbGameObject = new GameObject(name);
-    const glbTransform = new Transform();
-    glbGameObject.AddComponent(glbTransform);
-    glb.scene.getWorldPosition(glbTransform.Position);
-    glb.scene.getWorldQuaternion(glbTransform.Quaternion);
-    glb.scene.getWorldScale(glbTransform.Scale);
-    glbGameObject.add(glb.scene);
-    ManagerStore.GetManager(GameObjectManager).AddGameObject(glbGameObject);
-    GameObjectManager.gameObjectMap.set(name, glbGameObject);
-    glb.scene.traverse((child) => {
-      if (child instanceof THREE.Group || child instanceof THREE.Mesh) {
-        //const childName = `${child.name}_${this.generateGameObjectName()}`;
-        const childName = `${child.name}`;
-        const childObject = new GameObject(childName);
-        const childTransform = new Transform();
-        childObject.AddComponent(childTransform);
-        child.getWorldPosition(childTransform.Position);
-        child.getWorldQuaternion(childTransform.Quaternion);
-        child.getWorldScale(childTransform.Scale);
-        if (child instanceof THREE.Mesh) {
-          childObject.AddComponent(new MeshCollider(child));
-          childObject.AddComponent(new Rigidbody(0));
-        }
-        ManagerStore.GetManager(GameObjectManager).AddGameObject(childObject);
-        GameObjectManager.gameObjectMap.set(name, childObject);
-      }
-    });
+  // private createBookObject() {
+  //   const glb = AssetManager.Find("book") as GLTF;
+  //   const name = "book";
+  //   const glbGameObject = new GameObject(name);
+  //   const glbTransform = new Transform();
+  //   glbGameObject.AddComponent(glbTransform);
+  //   glb.scene.getWorldPosition(glbTransform.Position);
+  //   glb.scene.getWorldQuaternion(glbTransform.Quaternion);
+  //   glb.scene.getWorldScale(glbTransform.Scale);
+  //   glbGameObject.add(glb.scene);
+  //   ManagerStore.GetManager(GameObjectManager).AddGameObject(glbGameObject);
+  //   GameObjectManager.gameObjectMap.set(name, glbGameObject);
+  //   glb.scene.traverse((child) => {
+  //     if (child instanceof THREE.Group || child instanceof THREE.Mesh) {
+  //       //const childName = `${child.name}_${this.generateGameObjectName()}`;
+  //       const childName = `${child.name}`;
+  //       const childObject = new GameObject(childName);
+  //       const childTransform = new Transform();
+  //       childObject.AddComponent(childTransform);
+  //       child.getWorldPosition(childTransform.Position);
+  //       child.getWorldQuaternion(childTransform.Quaternion);
+  //       child.getWorldScale(childTransform.Scale);
+  //       if (child instanceof THREE.Mesh) {
+  //         childObject.AddComponent(new MeshCollider(child));
+  //         childObject.AddComponent(new Rigidbody(0));
+  //       }
+  //       ManagerStore.GetManager(GameObjectManager).AddGameObject(childObject);
+  //       GameObjectManager.gameObjectMap.set(name, childObject);
+  //     }
+  //   });
 
-    ManagerStore.GetManager(RenderingManager).scene.add(glbGameObject);
-  }
+  //   ManagerStore.GetManager(RenderingManager).scene.add(glbGameObject);
+  // }
 
-  private createManObject() {
-    const glb = AssetManager.Find("man") as GLTF;
-    const name = "man";
-    const glbGameObject = new GameObject(name);
-    const glbTransform = new Transform();
-    glbGameObject.AddComponent(glbTransform);
-    glb.scene.getWorldPosition(glbTransform.Position);
-    glb.scene.getWorldQuaternion(glbTransform.Quaternion);
-    glb.scene.getWorldScale(glbTransform.Scale);
-    glbGameObject.AddComponent(new SphereCollider());
-    glbGameObject.AddComponent(new Rigidbody(1, BODY_TYPES.DYNAMIC));
-    glbGameObject.add(glb.scene);
-    ManagerStore.GetManager(GameObjectManager).AddGameObject(glbGameObject);
-    GameObjectManager.gameObjectMap.set(name, glbGameObject);
-    ManagerStore.GetManager(RenderingManager).scene.add(glbGameObject);
-  }
+  // private createManObject() {
+  //   const glb = AssetManager.Find("man") as GLTF;
+  //   const name = "man";
+  //   const glbGameObject = new GameObject(name);
+  //   const glbTransform = new Transform();
+  //   glbGameObject.AddComponent(glbTransform);
+  //   glb.scene.getWorldPosition(glbTransform.Position);
+  //   glb.scene.getWorldQuaternion(glbTransform.Quaternion);
+  //   glb.scene.getWorldScale(glbTransform.Scale);
+  //   glbGameObject.AddComponent(new SphereCollider());
+  //   glbGameObject.AddComponent(new Rigidbody(1, BODY_TYPES.DYNAMIC));
+  //   glbGameObject.add(glb.scene);
+  //   ManagerStore.GetManager(GameObjectManager).AddGameObject(glbGameObject);
+  //   GameObjectManager.gameObjectMap.set(name, glbGameObject);
+  //   ManagerStore.GetManager(RenderingManager).scene.add(glbGameObject);
+  // }
 
   public Render(time: number) {
     time *= 0.001; // second unit
