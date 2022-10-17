@@ -1,7 +1,13 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import * as Utils from "../utils/FunctionLibrary";
-import { PerspectiveCamera, Scene, WebGLRenderer } from "three";
+import {
+  PerspectiveCamera,
+  Scene,
+  Vector3,
+  WebGLRenderer,
+  Object3D,
+} from "three";
 import { Sky } from "./Sky";
 import { GLTFLoader } from "three-stdlib";
 import { BoxCollider } from "../physics/colliders/BoxCollider";
@@ -9,6 +15,11 @@ import { CollisionGroups } from "../enums/CollisionGroups";
 import { OrbitControls } from "three-stdlib";
 import CannonDebugRenderer from "../utils/CannonDebugRenderer";
 import { TrimeshCollider } from "../physics/colliders/TrimeshCollider";
+import { Character } from "../characters/Character";
+import { IWorldEntity } from "../interfaces/IWorldEntity";
+import { IUpdatable } from "../interfaces/IUpdatable";
+import * as _ from "lodash";
+import { InputManager } from "../core/InputManager";
 
 export class World {
   public divContainer: HTMLDivElement;
@@ -21,8 +32,10 @@ export class World {
   public physicsWorld: CANNON.World;
   public cannonDebugRenderer: CannonDebugRenderer;
 
+  public inputManager: InputManager;
   private controls: OrbitControls;
 
+  public updatables: IUpdatable[] = [];
   private previousTime = 0;
 
   constructor() {
@@ -32,6 +45,7 @@ export class World {
     this.initScene();
     this.initCamera();
     this.initPhysics();
+    this.initOther();
     this.initWorld();
     this.initBackground();
     this.initLight();
@@ -83,6 +97,11 @@ export class World {
     this.physicsWorld.allowSleep = true;
   }
 
+  private initOther() {
+    // Initialization
+    this.inputManager = new InputManager(this, this.renderer.domElement);
+  }
+
   private async initWorld() {
     const gltfLoader = new GLTFLoader();
     const gltf = await gltfLoader.loadAsync("./glb/world.glb");
@@ -119,6 +138,27 @@ export class World {
               }
             }
           }
+
+          // TODO: scenario 연구
+          if (child.userData.data === "scenario") {
+            if (
+              child.userData.hasOwnProperty("default") &&
+              child.userData.default === "true"
+            ) {
+              child.traverse((scenarioData) => {
+                if (
+                  scenarioData.hasOwnProperty("userData") &&
+                  scenarioData.userData.hasOwnProperty("data")
+                ) {
+                  if (scenarioData.userData.data === "spawn") {
+                    if (scenarioData.userData.type === "player") {
+                      this.initCharacter(scenarioData);
+                    }
+                  }
+                }
+              });
+            }
+          }
         }
       }
     });
@@ -127,6 +167,22 @@ export class World {
   }
 
   private initLight() {}
+
+  private async initCharacter(initObject: Object3D) {
+    const gltfLoader = new GLTFLoader();
+    const model = await gltfLoader.loadAsync("./glb/boxman.glb");
+    const player = new Character(model);
+
+    const worldPos = new THREE.Vector3();
+    initObject.getWorldPosition(worldPos);
+    player.setPosition(worldPos.x, worldPos.y, worldPos.z);
+
+    const forward = Utils.getForward(initObject);
+    player.setOrientation(forward, true);
+
+    this.add(player);
+    //player.takeControl();
+  }
 
   private initDebugRenderer() {
     this.cannonDebugRenderer = new CannonDebugRenderer(
@@ -172,11 +228,34 @@ export class World {
   private update(delta: number) {
     this.updatePhysics(delta);
 
+    this.updatables.forEach((entity) => {
+      entity.update(delta);
+    });
+
     // Physics debug
     this.cannonDebugRenderer.update();
   }
 
   private updatePhysics(delta: number) {
     this.physicsWorld.step(1 / 60, delta, 3);
+  }
+
+  public add(worldEntity: IWorldEntity): void {
+    worldEntity.addToWorld(this);
+    this.registerUpdatable(worldEntity);
+  }
+
+  public registerUpdatable(registree: IUpdatable): void {
+    this.updatables.push(registree);
+    this.updatables.sort((a, b) => (a.updateOrder > b.updateOrder ? 1 : -1));
+  }
+
+  public remove(worldEntity: IWorldEntity): void {
+    worldEntity.removeFromWorld(this);
+    this.unregisterUpdatable(worldEntity);
+  }
+
+  public unregisterUpdatable(registree: IUpdatable): void {
+    _.pull(this.updatables, registree);
   }
 }
