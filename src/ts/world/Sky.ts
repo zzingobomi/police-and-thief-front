@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { IUpdatable } from "./interfaces/IUpdatable";
+import { IUpdatable } from "../interfaces/IUpdatable";
 import { World } from "./World";
 import { CSM } from "three-stdlib";
 import { SkyShader } from "../../lib/shaders/SkyShader";
