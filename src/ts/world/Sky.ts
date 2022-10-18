@@ -1,15 +1,14 @@
 import * as THREE from "three";
 import { IUpdatable } from "../interfaces/IUpdatable";
 import { World } from "./World";
-import { CSM } from "three-stdlib";
 import { SkyShader } from "../../lib/shaders/SkyShader";
 
-// TODO: CSM 분석, 시간과 바라보는 방향에 따른 해의 방향 분석
+// TODO: CSM(Cascaded Shadow Maps) 분석, 시간과 바라보는 방향에 따른 해의 방향 분석
 
 export class Sky extends THREE.Object3D implements IUpdatable {
   public updateOrder = 5;
   public sunPosition: THREE.Vector3 = new THREE.Vector3();
-  public csm: CSM;
+  public csm: any;
 
   private _phi = 50;
   private _theta = 145;
@@ -43,16 +42,17 @@ export class Sky extends THREE.Object3D implements IUpdatable {
     this.attach(this.skyMesh);
 
     // Ambient light
-    this.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 1.0);
-    this.refreshHemiIntensity();
-    this.hemiLight.color.setHSL(0.59, 0.4, 0.6);
-    this.hemiLight.groundColor.setHSL(0.095, 0.2, 0.75);
-    this.hemiLight.position.set(0, 50, 0);
-    this.world.scene.add(this.hemiLight);
+    // this.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 1.0);
+    // this.refreshHemiIntensity();
+    // this.hemiLight.color.setHSL(0.59, 0.4, 0.6);
+    // this.hemiLight.groundColor.setHSL(0.095, 0.2, 0.75);
+    // this.hemiLight.position.set(0, 50, 0);
+    // this.world.scene.add(this.hemiLight);
 
     this.refreshSunPosition();
 
     world.scene.add(this);
+    world.registerUpdatable(this);
   }
 
   public update(delta: number): void {}

@@ -12,7 +12,6 @@ import { Sky } from "./Sky";
 import { GLTFLoader } from "three-stdlib";
 import { BoxCollider } from "../physics/colliders/BoxCollider";
 import { CollisionGroups } from "../enums/CollisionGroups";
-import { OrbitControls } from "three-stdlib";
 import CannonDebugRenderer from "../utils/CannonDebugRenderer";
 import { TrimeshCollider } from "../physics/colliders/TrimeshCollider";
 import { Character } from "../characters/Character";
@@ -64,9 +63,11 @@ export class World {
   private initRenderer() {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    //renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    //renderer.toneMappingExposure = 1.0;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.VSMShadowMap;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.divContainer.appendChild(renderer.domElement);
     this.renderer = renderer;
   }
@@ -111,7 +112,7 @@ export class World {
     gltf.scene.traverse((child) => {
       if (child.hasOwnProperty("userData")) {
         if (child.type === "Mesh") {
-          // TODO:
+          // TODO: CSM
         }
 
         if (child.userData.hasOwnProperty("data")) {
@@ -139,6 +140,8 @@ export class World {
                 const phys = new TrimeshCollider(child, {});
                 this.physicsWorld.addBody(phys.body);
               }
+
+              child.visible = false;
             }
           }
 
@@ -169,7 +172,14 @@ export class World {
     this.scene.add(gltf.scene);
   }
 
-  private initLight() {}
+  private initLight() {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    this.scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight.position.set(1, 1, 0.5).normalize();
+    this.scene.add(directionalLight);
+  }
 
   private async initCharacter(initObject: Object3D) {
     const gltfLoader = new GLTFLoader();
