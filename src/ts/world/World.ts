@@ -128,7 +128,7 @@ export class World {
                 });
                 phys.body.position.copy(Utils.cannonVector(child.position));
                 phys.body.quaternion.copy(Utils.cannonQuat(child.quaternion));
-                //phys.body.computeAABB();
+                phys.body.updateAABB(); // 회전값대로 AABB를 다시 계산해줘야 raycastHit 이 제대로 작동함
 
                 // TODO: 정확한 의미 분석하기
                 phys.body.shapes.forEach((shape) => {
@@ -173,10 +173,10 @@ export class World {
   }
 
   private initLight() {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 1, 0.5).normalize();
     this.scene.add(directionalLight);
   }
@@ -188,7 +188,7 @@ export class World {
 
     const worldPos = new THREE.Vector3();
     initObject.getWorldPosition(worldPos);
-    player.setPosition(worldPos.x, worldPos.y, worldPos.z);
+    player.setPosition(worldPos.x, worldPos.y + 2, worldPos.z);
 
     const forward = Utils.getForward(initObject);
     player.setOrientation(forward, true);
