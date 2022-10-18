@@ -5,6 +5,7 @@ import { KeyBinding } from "./KeyBinding";
 import * as THREE from "three";
 import * as Utils from "../utils/FunctionLibrary";
 import * as _ from "lodash";
+import { Character } from "../characters/Character";
 
 export class CameraOperator implements IInputReceiver, IUpdatable {
   public updateOrder = 4;
@@ -25,7 +26,7 @@ export class CameraOperator implements IInputReceiver, IUpdatable {
   public forwardVelocity = 0;
   public rightVelocity = 0;
 
-  public followMode = false;
+  public characterCaller: Character | undefined;
 
   constructor(
     world: World,
@@ -82,11 +83,19 @@ export class CameraOperator implements IInputReceiver, IUpdatable {
     code: string,
     pressed: boolean
   ) {
-    for (const action in this.actions) {
-      const binding = this.actions[action];
+    // Free camera
+    if (code === "KeyC" && pressed === true && event.shiftKey === true) {
+      if (this.characterCaller !== undefined) {
+        this.world.inputManager.setInputReceiver(this.characterCaller);
+        this.characterCaller = undefined;
+      }
+    } else {
+      for (const action in this.actions) {
+        const binding = this.actions[action];
 
-      if (_.includes(binding.eventCodes, code)) {
-        binding.isPressed = pressed;
+        if (_.includes(binding.eventCodes, code)) {
+          binding.isPressed = pressed;
+        }
       }
     }
   }

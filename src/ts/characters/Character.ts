@@ -7,6 +7,9 @@ import { CapsuleCollider } from "../physics/colliders/CapsuleCollider";
 import { World } from "../world/World";
 import { CollisionGroups } from "../enums/CollisionGroups";
 import * as Utils from "../utils/FunctionLibrary";
+import * as _ from "lodash";
+import { ICharacterState } from "../interfaces/ICharacterState";
+import { Idle } from "./character_states/Idle";
 
 export class Character extends THREE.Object3D implements IWorldEntity {
   public updateOrder = 1;
@@ -16,17 +19,25 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public tiltContainer: THREE.Group;
   public modelContainer: THREE.Group;
   public mixer: THREE.AnimationMixer;
+  public animations: any[];
 
   // Movement
   public acceleration: THREE.Vector3 = new THREE.Vector3();
   public velocity: THREE.Vector3 = new THREE.Vector3();
   public arcadeVelocityInfluence: THREE.Vector3 = new THREE.Vector3();
   public velocityTarget: THREE.Vector3 = new THREE.Vector3();
-  public arcadeVelocityIsAdditive = false;
 
+  //public defaultVelocitySimulatorDamping = 0.8;
+  //public defaultVelocitySimulatorMass = 50;
+  //public velocitySimulator: VectorSpringSimulator;
+  //public moveSpeed = 4;
+  //public angularVelocity = 0;
   public orientation: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
   public orientationTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
-
+  //public defaultRotationSimulatorDamping = 0.5;
+  //public defaultRotationSimulatorMass = 10;
+  //public rotationSimulator: RelativeSpringSimulator;
+  public viewVector: THREE.Vector3;
   public actions: { [action: string]: KeyBinding };
   public characterCapsule: CapsuleCollider;
 
@@ -38,11 +49,14 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public raycastBox: THREE.Mesh;
 
   public world: World;
+  public charState: ICharacterState;
 
   private physicsEnabled = true;
 
   constructor(gltf: any) {
     super();
+
+    this.setAnimations(gltf.animations);
 
     this.tiltContainer = new THREE.Group();
     this.add(this.tiltContainer);
@@ -109,10 +123,14 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     this.characterCapsule.body.postStep = () => {
       this.physicsPostStep();
     };
+
+    // States
+    this.setState(new Idle(this));
   }
 
-  public tt() {
-    console.log(this.characterCapsule);
+  public setState(state: ICharacterState): void {
+    this.charState = state;
+    this.charState.onInputChange();
   }
 
   public addToWorld(world: World) {
@@ -127,6 +145,8 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public removeFromWorld(world: World) {}
 
   public update(delta: number) {
+    if (this.mixer !== undefined) this.mixer.update(delta);
+
     if (this.physicsEnabled) {
       this.position.set(
         this.characterCapsule.body.interpolatedPosition.x,
@@ -243,5 +263,105 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       this.characterCapsule.body.velocity.y = newVelocity.y;
       this.characterCapsule.body.velocity.z = newVelocity.z;
     }
+  }
+
+  public takeControl(): void {
+    if (this.world !== undefined) {
+      this.world.inputManager.setInputReceiver(this);
+    } else {
+      console.warn(
+        "Attempting to take control of a character that doesn't belong to a world."
+      );
+    }
+  }
+
+  // TODO: 이부분이 필요한가..?
+  public triggerAction(actionName: string, value: boolean) {
+    const action = this.actions[actionName];
+
+    if (action.isPressed !== value) {
+      // Set value
+      action.isPressed = value;
+
+      // Reset the 'just' attributes
+      action.justPressed = false;
+      action.justReleased = false;
+
+      // Set the 'just' attributes
+      if (value) action.justPressed = true;
+      else action.justReleased = true;
+
+      // Tell player to handle states according to new input
+      this.charState.onInputChange();
+
+      // Reset the 'just' attributes
+      action.justPressed = false;
+      action.justReleased = false;
+    }
+  }
+
+  public resetControls(): void {
+    for (const action in this.actions) {
+      if (this.actions.hasOwnProperty(action)) {
+        this.triggerAction(action, false);
+      }
+    }
+  }
+
+  handleKeyboardEvent(event: KeyboardEvent, code: string, pressed: boolean) {
+    // Free camera
+    if (code === "KeyC" && pressed === true && event.shiftKey === true) {
+      this.resetControls();
+      this.world.cameraOperator.characterCaller = this;
+      this.world.inputManager.setInputReceiver(this.world.cameraOperator);
+    } else {
+      for (const action in this.actions) {
+        if (this.actions.hasOwnProperty(action)) {
+          const binding = this.actions[action];
+
+          if (_.includes(binding.eventCodes, code)) {
+            this.triggerAction(action, pressed);
+          }
+        }
+      }
+    }
+  }
+  handleMouseButton(event: MouseEvent, code: string, pressed: boolean) {}
+  handleMouseMove(event: MouseEvent, deltaX: number, deltaY: number) {}
+  handleMouseWheel(event: WheelEvent, value: number) {}
+
+  inputReceiverInit() {
+    this.world.cameraOperator.setRadius(1.6, true);
+  }
+  inputReceiverUpdate(delta: number) {
+    // Look in camera's direction
+    this.viewVector = new THREE.Vector3().subVectors(
+      this.position,
+      this.world.camera.position
+    );
+    this.getWorldPosition(this.world.cameraOperator.target);
+  }
+
+  public setAnimations(animations: []): void {
+    this.animations = animations;
+  }
+
+  public setAnimation(clipName: string, fadeIn: number): number {
+    if (this.mixer !== undefined) {
+      const clip = THREE.AnimationClip.findByName(this.animations, clipName);
+      const action = this.mixer.clipAction(clip);
+      if (action === null) {
+        console.error(`Animation ${clipName} not found!`);
+        return 0;
+      }
+
+      // TODO: CrossFade 사용하면..?
+      this.mixer.stopAllAction();
+      action.fadeIn(fadeIn);
+      action.play();
+
+      return action.getClip().duration;
+    }
+    return 0;
   }
 }

@@ -188,13 +188,13 @@ export class World {
 
     const worldPos = new THREE.Vector3();
     initObject.getWorldPosition(worldPos);
-    player.setPosition(worldPos.x, worldPos.y + 2, worldPos.z);
+    player.setPosition(worldPos.x, worldPos.y, worldPos.z);
 
     const forward = Utils.getForward(initObject);
     player.setOrientation(forward, true);
 
     this.add(player);
-    //player.takeControl();
+    player.takeControl();
   }
 
   private initDebugRenderer() {
