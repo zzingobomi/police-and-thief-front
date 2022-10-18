@@ -20,6 +20,7 @@ import { IWorldEntity } from "../interfaces/IWorldEntity";
 import { IUpdatable } from "../interfaces/IUpdatable";
 import * as _ from "lodash";
 import { InputManager } from "../core/InputManager";
+import { CameraOperator } from "../core/CameraOperator";
 
 export class World {
   public divContainer: HTMLDivElement;
@@ -33,7 +34,8 @@ export class World {
   public cannonDebugRenderer: CannonDebugRenderer;
 
   public inputManager: InputManager;
-  private controls: OrbitControls;
+  public cameraOperator: CameraOperator;
+  //private controls: OrbitControls;
 
   public updatables: IUpdatable[] = [];
   private previousTime = 0;
@@ -51,7 +53,7 @@ export class World {
     this.initLight();
 
     this.initDebugRenderer();
-    this.initControls();
+    //this.initControls();
 
     window.onresize = this.resize.bind(this);
     this.resize();
@@ -100,6 +102,7 @@ export class World {
   private initOther() {
     // Initialization
     this.inputManager = new InputManager(this, this.renderer.domElement);
+    this.cameraOperator = new CameraOperator(this, this.camera, 0.3);
   }
 
   private async initWorld() {
@@ -191,14 +194,14 @@ export class World {
     );
   }
 
-  private initControls() {
-    this.controls = new OrbitControls(this.camera, this.divContainer);
-    this.controls.target.set(0, 20, 0);
-    this.controls.enablePan = true;
-    this.controls.enableDamping = false;
+  // private initControls() {
+  //   this.controls = new OrbitControls(this.camera, this.divContainer);
+  //   this.controls.target.set(0, 20, 0);
+  //   this.controls.enablePan = true;
+  //   this.controls.enableDamping = false;
 
-    this.controls.zoomSpeed = 10;
-  }
+  //   this.controls.zoomSpeed = 10;
+  // }
 
   private resize() {
     const width = this.divContainer.clientWidth;
