@@ -6,6 +6,10 @@ export class Idle extends CharacterStateBase {
   constructor(character: Character) {
     super(character);
 
+    this.character.velocitySimulator.damping = 0.6;
+    this.character.velocitySimulator.mass = 10;
+
+    this.character.setArcadeVelocityTarget(0);
     this.playAnimation("idle", 0.1);
   }
 
@@ -19,6 +23,8 @@ export class Idle extends CharacterStateBase {
     if (this.anyDirection()) {
       if (this.character.velocity.length() > 0.5) {
         this.character.setState(new Walk(this.character));
+      } else {
+        this.setAppropriateStartWalkState();
       }
     }
   }

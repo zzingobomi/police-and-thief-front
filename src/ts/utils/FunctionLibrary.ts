@@ -120,6 +120,55 @@ export function springV(
   source.add(velocity);
 }
 
+export function getSignedAngleBetweenVectors(
+  v1: THREE.Vector3,
+  v2: THREE.Vector3,
+  normal: THREE.Vector3 = new THREE.Vector3(0, 1, 0),
+  dotTreshold: number = 0.0005
+): number {
+  let angle = getAngleBetweenVectors(v1, v2, dotTreshold);
+
+  // Get vector pointing up or down
+  const cross = new THREE.Vector3().crossVectors(v1, v2);
+  // Compare cross with normal to find out direction
+  if (normal.dot(cross) < 0) {
+    angle = -angle;
+  }
+
+  return angle;
+}
+
+export function getAngleBetweenVectors(
+  v1: THREE.Vector3,
+  v2: THREE.Vector3,
+  dotTreshold: number = 0.0005
+): number {
+  let angle: number;
+  const dot = v1.dot(v2);
+
+  // If dot is close to 1, we'll round angle to zero
+  if (dot > 1 - dotTreshold) {
+    angle = 0;
+  } else {
+    // Dot too close to -1
+    if (dot < -1 + dotTreshold) {
+      angle = Math.PI;
+    } else {
+      // Get angle difference in radians
+      angle = Math.acos(dot);
+    }
+  }
+
+  return angle;
+}
+
+export function appplyVectorMatrixXZ(
+  a: THREE.Vector3,
+  b: THREE.Vector3
+): THREE.Vector3 {
+  return new THREE.Vector3(a.x * b.z + a.z * b.x, b.y, a.z * b.z + -a.x * b.x);
+}
+
 export function createTrimesh(geometry: THREE.BufferGeometry): CANNON.Trimesh {
   let vertices;
   if (geometry.index === null) {

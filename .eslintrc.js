@@ -19,6 +19,7 @@ module.exports = {
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
     "no-prototype-builtins": "off",
     "react/require-render-return": "off",
     "react/react-in-jsx-scope": "off",

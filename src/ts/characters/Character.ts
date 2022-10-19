@@ -10,6 +10,8 @@ import * as Utils from "../utils/FunctionLibrary";
 import * as _ from "lodash";
 import { ICharacterState } from "../interfaces/ICharacterState";
 import { Idle } from "./character_states/Idle";
+import { VectorSpringSimulator } from "../physics/colliders/spring_simulation/VectorSpringSimulator";
+import { RelativeSpringSimulator } from "../physics/colliders/spring_simulation/RelativeSpringSimulator";
 
 export class Character extends THREE.Object3D implements IWorldEntity {
   public updateOrder = 1;
@@ -27,16 +29,16 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public arcadeVelocityInfluence: THREE.Vector3 = new THREE.Vector3();
   public velocityTarget: THREE.Vector3 = new THREE.Vector3();
 
-  //public defaultVelocitySimulatorDamping = 0.8;
-  //public defaultVelocitySimulatorMass = 50;
-  //public velocitySimulator: VectorSpringSimulator;
-  //public moveSpeed = 4;
-  //public angularVelocity = 0;
+  public defaultVelocitySimulatorDamping = 0.8;
+  public defaultVelocitySimulatorMass = 50;
+  public velocitySimulator: VectorSpringSimulator;
+  public moveSpeed = 4;
+  public angularVelocity = 0;
   public orientation: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
   public orientationTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 1);
-  //public defaultRotationSimulatorDamping = 0.5;
-  //public defaultRotationSimulatorMass = 10;
-  //public rotationSimulator: RelativeSpringSimulator;
+  public defaultRotationSimulatorDamping = 0.5;
+  public defaultRotationSimulatorMass = 10;
+  public rotationSimulator: RelativeSpringSimulator;
   public viewVector: THREE.Vector3;
   public actions: { [action: string]: KeyBinding };
   public characterCapsule: CapsuleCollider;
@@ -67,6 +69,19 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     this.modelContainer.add(gltf.scene);
 
     this.mixer = new THREE.AnimationMixer(gltf.scene);
+
+    this.velocitySimulator = new VectorSpringSimulator(
+      60,
+      this.defaultVelocitySimulatorMass,
+      this.defaultVelocitySimulatorDamping
+    );
+    this.rotationSimulator = new RelativeSpringSimulator(
+      60,
+      this.defaultRotationSimulatorMass,
+      this.defaultRotationSimulatorDamping
+    );
+
+    this.viewVector = new THREE.Vector3();
 
     // Actions
     this.actions = {
@@ -147,6 +162,8 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public update(delta: number) {
     if (this.mixer !== undefined) this.mixer.update(delta);
 
+    if (this.physicsEnabled) this.springMovement(delta);
+
     if (this.physicsEnabled) {
       this.position.set(
         this.characterCapsule.body.interpolatedPosition.x,
@@ -170,6 +187,14 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       this.position.y = y;
       this.position.z = z;
     }
+  }
+
+  public springMovement(delta: number) {
+    this.velocitySimulator.target.copy(this.velocityTarget);
+    this.velocitySimulator.simulate(delta);
+
+    this.velocity.copy(this.velocitySimulator.position);
+    this.acceleration.copy(this.velocitySimulator.velocity);
   }
 
   public setOrientation(vector: THREE.Vector3, instantly = false): void {
@@ -363,5 +388,39 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       return action.getClip().duration;
     }
     return 0;
+  }
+
+  public setArcadeVelocityTarget(
+    velZ: number,
+    velX: number = 0,
+    velY: number = 0
+  ): void {
+    this.velocityTarget.z = velZ;
+    this.velocityTarget.x = velX;
+    this.velocityTarget.y = velY;
+  }
+
+  public getLocalMovementDirection(): THREE.Vector3 {
+    const positiveX = this.actions.right.isPressed ? -1 : 0;
+    const negativeX = this.actions.left.isPressed ? 1 : 0;
+    const positiveZ = this.actions.up.isPressed ? 1 : 0;
+    const negativeZ = this.actions.down.isPressed ? -1 : 0;
+
+    return new THREE.Vector3(
+      positiveX + negativeX,
+      0,
+      positiveZ + negativeZ
+    ).normalize();
+  }
+
+  public getCameraRelativeMovementVector(): THREE.Vector3 {
+    const localDirection = this.getLocalMovementDirection();
+    const flatViewVector = new THREE.Vector3(
+      this.viewVector.x,
+      0,
+      this.viewVector.z
+    ).normalize();
+
+    return Utils.appplyVectorMatrixXZ(flatViewVector, localDirection);
   }
 }
