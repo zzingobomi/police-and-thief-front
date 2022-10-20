@@ -1,6 +1,8 @@
+import * as Utils from "../../utils/FunctionLibrary";
 import { Character } from "../Character";
 import { CharacterStateBase } from "./CharacterStateBase";
 import { Idle } from "./Idle";
+import { STATE_Idle } from "./StateConst";
 
 export class Walk extends CharacterStateBase {
   constructor(character: Character) {
@@ -11,6 +13,8 @@ export class Walk extends CharacterStateBase {
 
   public update(delta: number): void {
     super.update(delta);
+
+    this.character.setCameraRelativeOrientationTarget();
   }
 
   public onInputChange(): void {
@@ -20,7 +24,9 @@ export class Walk extends CharacterStateBase {
       if (this.character.velocity.length() > 1) {
         //this.character.setState(new EndWalk(this.character));
       } else {
-        this.character.setState(new Idle(this.character));
+        this.character.setState(
+          Utils.characterStateFactory(STATE_Idle, this.character)
+        );
       }
     }
   }

@@ -3,6 +3,27 @@ import * as CANNON from "cannon-es";
 import * as THREE from "three";
 import { Space } from "../enums/Space";
 import { SimulationFrame } from "../physics/colliders/spring_simulation/SimulationFrame";
+import { StartWalkBackLeft } from "../characters/character_states/StartWalkBackLeft";
+import { Character } from "../characters/Character";
+import { Idle } from "../characters/character_states/Idle";
+import { Walk } from "../characters/character_states/Walk";
+import {
+  STATE_Idle,
+  STATE_IdleRotateLeft,
+  STATE_IdleRotateRight,
+  STATE_StartWalkBackLeft,
+  STATE_StartWalkBackRight,
+  STATE_StartWalkForward,
+  STATE_StartWalkLeft,
+  STATE_StartWalkRight,
+  STATE_Walk,
+} from "../characters/character_states/StateConst";
+import { StartWalkBackRight } from "../characters/character_states/StartWalkBackRight";
+import { StartWalkLeft } from "../characters/character_states/StartWalkLeft";
+import { StartWalkRight } from "../characters/character_states/StartWalkRight";
+import { StartWalkForward } from "../characters/character_states/StartWalkForward";
+import { IdleRotateLeft } from "../characters/character_states/IdleRotateLeft";
+import { IdleRotateRight } from "../characters/character_states/IdleRotateRight";
 
 interface Face3 {
   a: number;
@@ -273,4 +294,29 @@ export function offsetCenterOfMass(
   const worldCenterOfMass = new CANNON.Vec3();
   body.vectorToWorldFrame(centreOfMass, worldCenterOfMass);
   body.position.vadd(worldCenterOfMass, body.position);
+}
+
+export function characterStateFactory(stateName: string, character: Character) {
+  switch (stateName) {
+    case STATE_Idle:
+      return new Idle(character);
+    case STATE_IdleRotateLeft:
+      return new IdleRotateLeft(character);
+    case STATE_IdleRotateRight:
+      return new IdleRotateRight(character);
+    case STATE_StartWalkBackLeft:
+      return new StartWalkBackLeft(character);
+    case STATE_StartWalkBackRight:
+      return new StartWalkBackRight(character);
+    case STATE_StartWalkLeft:
+      return new StartWalkLeft(character);
+    case STATE_StartWalkRight:
+      return new StartWalkRight(character);
+    case STATE_StartWalkForward:
+      return new StartWalkForward(character);
+    case STATE_Walk:
+      return new Walk(character);
+    default:
+      return new Idle(character);
+  }
 }

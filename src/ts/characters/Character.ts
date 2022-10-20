@@ -160,9 +160,12 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public removeFromWorld(world: World) {}
 
   public update(delta: number) {
-    if (this.mixer !== undefined) this.mixer.update(delta);
+    this.charState?.update(delta);
 
     if (this.physicsEnabled) this.springMovement(delta);
+    if (this.physicsEnabled) this.springRotation(delta);
+    if (this.physicsEnabled) this.rotateModel();
+    if (this.mixer !== undefined) this.mixer.update(delta);
 
     if (this.physicsEnabled) {
       this.position.set(
@@ -195,6 +198,35 @@ export class Character extends THREE.Object3D implements IWorldEntity {
 
     this.velocity.copy(this.velocitySimulator.position);
     this.acceleration.copy(this.velocitySimulator.velocity);
+  }
+
+  public springRotation(delta: number) {
+    const angle = Utils.getSignedAngleBetweenVectors(
+      this.orientation,
+      this.orientationTarget
+    );
+
+    this.rotationSimulator.target = angle;
+    this.rotationSimulator.simulate(delta);
+    const rot = this.rotationSimulator.position;
+
+    this.orientation.applyAxisAngle(new THREE.Vector3(0, 1, 0), rot);
+    this.angularVelocity = this.rotationSimulator.velocity;
+  }
+
+  public rotateModel() {
+    this.lookAt(
+      this.position.x + this.orientation.x,
+      this.position.y + this.orientation.y,
+      this.position.z + this.orientation.z
+    );
+    this.tiltContainer.rotation.z =
+      -this.angularVelocity * 2.3 * this.velocity.length();
+    this.tiltContainer.position.setY(
+      Math.cos(Math.abs(this.angularVelocity * 2.3 * this.velocity.length())) /
+        2 -
+        0.5
+    );
   }
 
   public setOrientation(vector: THREE.Vector3, instantly = false): void {
@@ -300,7 +332,6 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     }
   }
 
-  // TODO: 이부분이 필요한가..?
   public triggerAction(actionName: string, value: boolean) {
     const action = this.actions[actionName];
 
@@ -422,5 +453,15 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     ).normalize();
 
     return Utils.appplyVectorMatrixXZ(flatViewVector, localDirection);
+  }
+
+  public setCameraRelativeOrientationTarget() {
+    const moveVector = this.getCameraRelativeMovementVector();
+
+    if (moveVector.x === 0 && moveVector.y === 0 && moveVector.z === 0) {
+      this.setOrientation(this.orientation);
+    } else {
+      this.setOrientation(moveVector);
+    }
   }
 }

@@ -1,15 +1,33 @@
 import * as Utils from "../../utils/FunctionLibrary";
 import { Character } from "../Character";
 import { ICharacterState } from "../../interfaces/ICharacterState";
-import { StartWalkBackLeft } from "./StartWalkBackLeft";
+import {
+  STATE_StartWalkBackLeft,
+  STATE_StartWalkBackRight,
+  STATE_StartWalkForward,
+  STATE_StartWalkLeft,
+  STATE_StartWalkRight,
+} from "./StateConst";
 
 export abstract class CharacterStateBase implements ICharacterState {
   public character: Character;
   public timer: number;
-  public animationLength: any;
+  public animationLength: number;
 
   constructor(character: Character) {
     this.character = character;
+
+    this.character.velocitySimulator.damping =
+      this.character.defaultVelocitySimulatorDamping;
+    this.character.velocitySimulator.mass =
+      this.character.defaultVelocitySimulatorMass;
+
+    this.character.rotationSimulator.damping =
+      this.character.defaultRotationSimulatorDamping;
+    this.character.rotationSimulator.mass =
+      this.character.defaultRotationSimulatorMass;
+
+    this.timer = 0;
   }
 
   public update(delta: number): void {
@@ -63,10 +81,26 @@ export abstract class CharacterStateBase implements ICharacterState {
       this.character.getCameraRelativeMovementVector()
     );
 
-    // TODO: cannot access before initionlize..
-
     if (angle > range * 0.8) {
-      this.character.setState(new StartWalkBackLeft(this.character));
+      this.character.setState(
+        Utils.characterStateFactory(STATE_StartWalkBackLeft, this.character)
+      );
+    } else if (angle < -range * 0.8) {
+      this.character.setState(
+        Utils.characterStateFactory(STATE_StartWalkBackRight, this.character)
+      );
+    } else if (angle > range * 0.3) {
+      this.character.setState(
+        Utils.characterStateFactory(STATE_StartWalkLeft, this.character)
+      );
+    } else if (angle < -range * 0.3) {
+      this.character.setState(
+        Utils.characterStateFactory(STATE_StartWalkRight, this.character)
+      );
+    } else {
+      this.character.setState(
+        Utils.characterStateFactory(STATE_StartWalkForward, this.character)
+      );
     }
   }
 }
