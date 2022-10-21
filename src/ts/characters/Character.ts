@@ -286,7 +286,38 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   }
 
   public physicsPostStep(): void {
-    const newVelocity = new THREE.Vector3();
+    const simulatedVelocity = new THREE.Vector3(
+      this.characterCapsule.body.velocity.x,
+      this.characterCapsule.body.velocity.y,
+      this.characterCapsule.body.velocity.z
+    );
+
+    let arcadeVelocity = new THREE.Vector3()
+      .copy(this.velocity)
+      .multiplyScalar(this.moveSpeed);
+    arcadeVelocity = Utils.appplyVectorMatrixXZ(
+      this.orientation,
+      arcadeVelocity
+    );
+
+    let newVelocity = new THREE.Vector3();
+    newVelocity = new THREE.Vector3(
+      THREE.MathUtils.lerp(
+        simulatedVelocity.x,
+        arcadeVelocity.x,
+        this.arcadeVelocityInfluence.x
+      ),
+      THREE.MathUtils.lerp(
+        simulatedVelocity.y,
+        arcadeVelocity.y,
+        this.arcadeVelocityInfluence.y
+      ),
+      THREE.MathUtils.lerp(
+        simulatedVelocity.z,
+        arcadeVelocity.z,
+        this.arcadeVelocityInfluence.z
+      )
+    );
 
     if (this.rayHasHit) {
       newVelocity.y = 0;
@@ -384,7 +415,9 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     }
   }
   handleMouseButton(event: MouseEvent, code: string, pressed: boolean) {}
-  handleMouseMove(event: MouseEvent, deltaX: number, deltaY: number) {}
+  handleMouseMove(event: MouseEvent, deltaX: number, deltaY: number) {
+    this.world.cameraOperator.move(deltaX, deltaY);
+  }
   handleMouseWheel(event: WheelEvent, value: number) {}
 
   inputReceiverInit() {
@@ -422,6 +455,14 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       return action.getClip().duration;
     }
     return 0;
+  }
+
+  public setArcadeVelocityInfluence(
+    x: number,
+    y: number = x,
+    z: number = x
+  ): void {
+    this.arcadeVelocityInfluence.set(x, y, z);
   }
 
   public setArcadeVelocityTarget(

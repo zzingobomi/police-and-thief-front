@@ -1,0 +1,180 @@
+@startuml class-diagram
+!define COMMENT(x) <color:grey>x</color>
+ 
+scale 1
+title 클래스 다이어그램
+
+header
+class: 
+endheader
+
+class World {
+  updatables: IUpdatable[]
+
+  +initWorld()
+  +update()
+}
+
+interface IUpdatable {
+  +update()
+}
+
+interface IWorldEntity {
+  entityType
+
+  +addToWorld(world)
+  +removeFromWorld(world)
+}
+
+class Character {
+  charState: ICharacterState
+
+  characterCapsule: CapsuleCollider
+
+  ''' Raycast '''
+  rayResult: CANNON.RaycastResult  
+
+  +physicsPreStep()
+  +feetRaycast()
+  +physicsPostStep()
+}
+
+'
+' Character State & Animation
+'
+interface ICharacterState {
+  +update()
+  +onInputChange()
+}
+
+class CharacterStateBase {
+  character: Character
+  timer: number
+  animationLength: number
+
+  +playAnimation()
+  +animationEnded()
+  +noDirection()
+  +anyDirection()
+  +setAppropriateStartWalkState()
+}
+
+
+
+
+
+
+IWorldEntity <|-- IUpdatable
+Character <|-- THREE.Object3D
+Character <|-- IWorldEntity
+
+World <-- Character
+
+''' Character State '''
+CharacterStateBase <|-- ICharacterState
+Idle <|-- CharacterStateBase
+IdleRotateLeft <|-- CharacterStateBase
+IdleRotateRight <|-- CharacterStateBase
+StartWalkBase <|-- CharacterStateBase
+StartWalkForward <|-- StartWalkBase
+StartWalkLeft <|-- StartWalkBase
+StartWalkRight <|-- StartWalkBase
+StartWalkBackLeft <|-- StartWalkBase
+StartWalkBackRight <|-- StartWalkBase
+Walk <|-- CharacterStateBase
+
+Character <-- ICharacterState
+
+
+
+
+' class SamplePage {
+'   COMMENT(실제 사용자가 작성하는 테스트 페이지)
+'   COMMENT(JSON값을 파싱후 AvatarWrapper 생성)
+' }
+
+' class AvatarTeature {  
+'   -movespeed: number
+'   -useGLTF
+'   +moveLeft(delta)
+'   +moveRight(delta)
+'   +moveForward(delta)
+'   +moveBack(delta)
+' }
+
+' class AvatarExample {  
+'   -movespeed: number
+'   -path: string
+'   -useGLTF(path)
+'   +moveLeft(delta)
+'   +moveRight(delta)
+'   +moveForward(delta)
+'   +moveBack(delta)
+' }
+
+' class SpaceExample {    
+'   -path: string
+'   -isDoorOpen: boolean
+'   -useGLTF(path)
+'   +openDoor()
+'   +closeDoor()  
+' }
+
+' class AvatarWrapper {
+'   -keyinfos: MobxValue
+'   -useFrame
+' }
+
+' class SpaceWrapper {
+'   -keyinfos: MobxValue
+'   -useFrame
+' }
+
+' interface IAvatarFunction {
+'   +moveLeft(delta)
+'   +moveRight(delta)
+'   +moveForward(delta)
+'   +moveBack(delta)
+' }
+
+' interface ISpaceFunction {
+'   +openDoor()
+'   +closeDoor()  
+' }
+
+' class KeyboardControls {
+'   -KeyInputItem(target)
+' }
+
+' class KeyinfoStore {
+'   -keyinfos: observable
+'   +setKeyState(target, press)
+' }
+
+' object MetaComponentJSON {
+'   id
+'   name
+'   path
+'   ...
+'   transform
+'   keyinput
+'   interaction
+'   ...
+' }
+
+' SamplePage <-- MetaComponentJSON
+' SamplePage <-- AvatarWrapper
+' SamplePage <-- SpaceWrapper
+' AvatarWrapper *-- AvatarExample
+' SpaceWrapper *-- SpaceExample
+' AvatarTeature <|-- IAvatarFunction
+' AvatarExample <|-- IAvatarFunction
+' SpaceExample <|-- ISpaceFunction
+' AvatarWrapper <-- KeyinfoStore: AvatarWrapper, SpaceWrapper에서\n keyinfos를 통해 Key값의\n변화를 감지한다.
+' SpaceWrapper <-- KeyinfoStore
+' KeyinfoStore <-- KeyboardControls: a, ArrowLeft 키 등을 누르면 \n전역 KeyinfoStore 값이 바뀐다.
+
+' note top of AvatarTeature: 유저가 만드는 Avatar별로\nComponent가 생성될 때 가정
+' note top of AvatarExample: 하나의 공통 AvatarComponent가\n생성될 때 가정
+ 
+@enduml
