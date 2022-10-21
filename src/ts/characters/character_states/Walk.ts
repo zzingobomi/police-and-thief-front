@@ -1,13 +1,13 @@
 import * as Utils from "../../utils/FunctionLibrary";
 import { Character } from "../Character";
 import { CharacterStateBase } from "./CharacterStateBase";
-import { Idle } from "./Idle";
 import { STATE_Idle } from "./StateConst";
 
 export class Walk extends CharacterStateBase {
   constructor(character: Character) {
     super(character);
 
+    this.character.setArcadeVelocityTarget(0.8);
     this.playAnimation("run", 0.1);
   }
 

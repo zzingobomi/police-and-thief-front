@@ -21,6 +21,7 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public tiltContainer: THREE.Group;
   public modelContainer: THREE.Group;
   public mixer: THREE.AnimationMixer;
+  public oldAction: THREE.AnimationAction;
   public animations: any[];
 
   // Movement
@@ -411,10 +412,12 @@ export class Character extends THREE.Object3D implements IWorldEntity {
         return 0;
       }
 
-      // TODO: CrossFade 사용하면..?
-      this.mixer.stopAllAction();
-      action.fadeIn(fadeIn);
+      action.reset();
       action.play();
+      if (this.oldAction) {
+        action.crossFadeFrom(this.oldAction, fadeIn, true);
+      }
+      this.oldAction = action;
 
       return action.getClip().duration;
     }
