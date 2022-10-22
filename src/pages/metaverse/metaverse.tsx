@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import { colyseusContext } from "../../context";
+import { ColyseusStore } from "../../store";
 import { World } from "../../ts/world/World";
 
 export const Metaverse = () => {
@@ -13,12 +14,13 @@ export const Metaverse = () => {
       const room = await client?.joinOrCreate("meta_room");
       if (room) {
         console.log("join room");
+        ColyseusStore.getInstance().SetRoom(room);
+        if (container.current && container.current.children.length > 0) return;
+        metaworld.current = new World();
       }
     }
     if (isMounted) {
       joinMetaverse();
-      //if (container.current && container.current.children.length > 0) return;
-      //metaworld.current = new World();
     }
 
     return () => {

@@ -12,6 +12,7 @@ import { ICharacterState } from "../interfaces/ICharacterState";
 import { Idle } from "./character_states/Idle";
 import { VectorSpringSimulator } from "../physics/colliders/spring_simulation/VectorSpringSimulator";
 import { RelativeSpringSimulator } from "../physics/colliders/spring_simulation/RelativeSpringSimulator";
+import { ColyseusStore } from "../../store";
 
 export class Character extends THREE.Object3D implements IWorldEntity {
   public updateOrder = 1;
@@ -40,6 +41,7 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public defaultRotationSimulatorDamping = 0.5;
   public defaultRotationSimulatorMass = 10;
   public rotationSimulator: RelativeSpringSimulator;
+  public viewOldVector: THREE.Vector3;
   public viewVector: THREE.Vector3;
   public actions: { [action: string]: KeyBinding };
   public characterCapsule: CapsuleCollider;
@@ -54,10 +56,20 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public world: World;
   public charState: ICharacterState;
 
-  private physicsEnabled = true;
+  //private physicsEnabled = true;
 
   constructor(gltf: any) {
     super();
+
+    // const aniInfos = [];
+    // for (const anim of gltf.animations) {
+    //   const aniInfo = {
+    //     name: anim.name,
+    //     duration: anim.duration,
+    //   };
+    //   aniInfos.push(aniInfo);
+    // }
+    // console.log(JSON.stringify(aniInfos));
 
     this.setAnimations(gltf.animations);
 
@@ -82,6 +94,7 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       this.defaultRotationSimulatorDamping
     );
 
+    this.viewOldVector = new THREE.Vector3();
     this.viewVector = new THREE.Vector3();
 
     // Actions
@@ -133,12 +146,12 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     this.raycastBox.visible = true;
 
     // cannon-es latest version에서는 preStep, postStep 없어짐..
-    this.characterCapsule.body.preStep = () => {
-      this.physicsPreStep();
-    };
-    this.characterCapsule.body.postStep = () => {
-      this.physicsPostStep();
-    };
+    // this.characterCapsule.body.preStep = () => {
+    //   this.physicsPreStep();
+    // };
+    // this.characterCapsule.body.postStep = () => {
+    //   this.physicsPostStep();
+    // };
 
     // States
     this.setState(new Idle(this));
@@ -152,7 +165,7 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public addToWorld(world: World) {
     this.world = world;
 
-    world.physicsWorld.addBody(this.characterCapsule.body);
+    //world.physicsWorld.addBody(this.characterCapsule.body);
 
     world.scene.add(this);
     world.scene.add(this.raycastBox);
@@ -163,34 +176,51 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public update(delta: number) {
     this.charState?.update(delta);
 
-    if (this.physicsEnabled) this.springMovement(delta);
-    if (this.physicsEnabled) this.springRotation(delta);
-    if (this.physicsEnabled) this.rotateModel();
+    // if (this.physicsEnabled) this.springMovement(delta);
+    // if (this.physicsEnabled) this.springRotation(delta);
+    // if (this.physicsEnabled) this.rotateModel();
     if (this.mixer !== undefined) this.mixer.update(delta);
 
-    if (this.physicsEnabled) {
-      this.position.set(
-        this.characterCapsule.body.interpolatedPosition.x,
-        this.characterCapsule.body.interpolatedPosition.y,
-        this.characterCapsule.body.interpolatedPosition.z
-      );
-    }
+    // if (this.physicsEnabled) {
+    //   this.position.set(
+    //     this.characterCapsule.body.interpolatedPosition.x,
+    //     this.characterCapsule.body.interpolatedPosition.y,
+    //     this.characterCapsule.body.interpolatedPosition.z
+    //   );
+    // }
   }
 
-  public setPosition(x: number, y: number, z: number) {
-    if (this.physicsEnabled) {
-      this.characterCapsule.body.previousPosition = new CANNON.Vec3(x, y, z);
-      this.characterCapsule.body.position = new CANNON.Vec3(x, y, z);
-      this.characterCapsule.body.interpolatedPosition = new CANNON.Vec3(
-        x,
-        y,
-        z
-      );
-    } else {
-      this.position.x = x;
-      this.position.y = y;
-      this.position.z = z;
-    }
+  public setPosition(vec: THREE.Vector3) {
+    this.position.x = vec.x;
+    this.position.y = vec.y;
+    this.position.z = vec.z;
+
+    // if (this.physicsEnabled) {
+    //   this.characterCapsule.body.previousPosition = new CANNON.Vec3(x, y, z);
+    //   this.characterCapsule.body.position = new CANNON.Vec3(x, y, z);
+    //   this.characterCapsule.body.interpolatedPosition = new CANNON.Vec3(
+    //     x,
+    //     y,
+    //     z
+    //   );
+    // } else {
+    //  this.position.x = x;
+    //  this.position.y = y;
+    //  this.position.z = z;
+    //}
+  }
+
+  public setQuaternion(quat: THREE.Quaternion) {
+    this.quaternion.x = quat.x;
+    this.quaternion.y = quat.y;
+    this.quaternion.z = quat.z;
+    this.quaternion.w = quat.w;
+  }
+
+  public setScale(vec: THREE.Vector3) {
+    this.scale.x = vec.x;
+    this.scale.y = vec.y;
+    this.scale.z = vec.z;
   }
 
   public springMovement(delta: number) {
@@ -239,120 +269,120 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     }
   }
 
-  public physicsPreStep() {
-    this.feetRaycast();
+  // public physicsPreStep() {
+  //   this.feetRaycast();
 
-    if (this.rayHasHit) {
-      if (this.raycastBox.visible) {
-        this.raycastBox.position.x = this.rayResult.hitPointWorld.x;
-        this.raycastBox.position.y = this.rayResult.hitPointWorld.y;
-        this.raycastBox.position.z = this.rayResult.hitPointWorld.z;
-      }
-    } else {
-      if (this.raycastBox.visible) {
-        this.raycastBox.position.set(
-          this.characterCapsule.body.position.x,
-          this.characterCapsule.body.position.y -
-            this.rayCastLength -
-            this.raySafeOffset,
-          this.characterCapsule.body.position.z
-        );
-      }
-    }
-  }
+  //   if (this.rayHasHit) {
+  //     if (this.raycastBox.visible) {
+  //       this.raycastBox.position.x = this.rayResult.hitPointWorld.x;
+  //       this.raycastBox.position.y = this.rayResult.hitPointWorld.y;
+  //       this.raycastBox.position.z = this.rayResult.hitPointWorld.z;
+  //     }
+  //   } else {
+  //     if (this.raycastBox.visible) {
+  //       this.raycastBox.position.set(
+  //         this.characterCapsule.body.position.x,
+  //         this.characterCapsule.body.position.y -
+  //           this.rayCastLength -
+  //           this.raySafeOffset,
+  //         this.characterCapsule.body.position.z
+  //       );
+  //     }
+  //   }
+  // }
 
-  public feetRaycast() {
-    const body = this.characterCapsule.body;
-    const start = new CANNON.Vec3(
-      body.position.x,
-      body.position.y,
-      body.position.z
-    );
-    const end = new CANNON.Vec3(
-      body.position.x,
-      body.position.y - this.rayCastLength - this.raySafeOffset,
-      body.position.z
-    );
-    const rayCastOptions = {
-      collisionFilterMask: CollisionGroups.Default, // 어떤 collisionGroup 이랑 반응할것인지
-      skipBackfaces: true /* ignore back faces */,
-    };
-    this.rayHasHit = this.world.physicsWorld.raycastClosest(
-      start,
-      end,
-      rayCastOptions,
-      this.rayResult
-    );
-  }
+  // public feetRaycast() {
+  //   const body = this.characterCapsule.body;
+  //   const start = new CANNON.Vec3(
+  //     body.position.x,
+  //     body.position.y,
+  //     body.position.z
+  //   );
+  //   const end = new CANNON.Vec3(
+  //     body.position.x,
+  //     body.position.y - this.rayCastLength - this.raySafeOffset,
+  //     body.position.z
+  //   );
+  //   const rayCastOptions = {
+  //     collisionFilterMask: CollisionGroups.Default, // 어떤 collisionGroup 이랑 반응할것인지
+  //     skipBackfaces: true /* ignore back faces */,
+  //   };
+  //   this.rayHasHit = this.world.physicsWorld.raycastClosest(
+  //     start,
+  //     end,
+  //     rayCastOptions,
+  //     this.rayResult
+  //   );
+  // }
 
-  public physicsPostStep(): void {
-    const simulatedVelocity = new THREE.Vector3(
-      this.characterCapsule.body.velocity.x,
-      this.characterCapsule.body.velocity.y,
-      this.characterCapsule.body.velocity.z
-    );
+  // public physicsPostStep(): void {
+  //   const simulatedVelocity = new THREE.Vector3(
+  //     this.characterCapsule.body.velocity.x,
+  //     this.characterCapsule.body.velocity.y,
+  //     this.characterCapsule.body.velocity.z
+  //   );
 
-    let arcadeVelocity = new THREE.Vector3()
-      .copy(this.velocity)
-      .multiplyScalar(this.moveSpeed);
-    arcadeVelocity = Utils.appplyVectorMatrixXZ(
-      this.orientation,
-      arcadeVelocity
-    );
+  //   let arcadeVelocity = new THREE.Vector3()
+  //     .copy(this.velocity)
+  //     .multiplyScalar(this.moveSpeed);
+  //   arcadeVelocity = Utils.appplyVectorMatrixXZ(
+  //     this.orientation,
+  //     arcadeVelocity
+  //   );
 
-    let newVelocity = new THREE.Vector3();
-    newVelocity = new THREE.Vector3(
-      THREE.MathUtils.lerp(
-        simulatedVelocity.x,
-        arcadeVelocity.x,
-        this.arcadeVelocityInfluence.x
-      ),
-      THREE.MathUtils.lerp(
-        simulatedVelocity.y,
-        arcadeVelocity.y,
-        this.arcadeVelocityInfluence.y
-      ),
-      THREE.MathUtils.lerp(
-        simulatedVelocity.z,
-        arcadeVelocity.z,
-        this.arcadeVelocityInfluence.z
-      )
-    );
+  //   let newVelocity = new THREE.Vector3();
+  //   newVelocity = new THREE.Vector3(
+  //     THREE.MathUtils.lerp(
+  //       simulatedVelocity.x,
+  //       arcadeVelocity.x,
+  //       this.arcadeVelocityInfluence.x
+  //     ),
+  //     THREE.MathUtils.lerp(
+  //       simulatedVelocity.y,
+  //       arcadeVelocity.y,
+  //       this.arcadeVelocityInfluence.y
+  //     ),
+  //     THREE.MathUtils.lerp(
+  //       simulatedVelocity.z,
+  //       arcadeVelocity.z,
+  //       this.arcadeVelocityInfluence.z
+  //     )
+  //   );
 
-    if (this.rayHasHit) {
-      newVelocity.y = 0;
-      // TODO: Move on top of moving objects
+  //   if (this.rayHasHit) {
+  //     newVelocity.y = 0;
+  //     // TODO: Move on top of moving objects
 
-      // Measure the normal vector offset from direct "up" vector
-      // and transform it into a matrix
-      const up = new THREE.Vector3(0, 1, 0);
-      const normal = new THREE.Vector3(
-        this.rayResult.hitNormalWorld.x,
-        this.rayResult.hitNormalWorld.y,
-        this.rayResult.hitNormalWorld.z
-      );
-      const q = new THREE.Quaternion().setFromUnitVectors(up, normal);
-      const m = new THREE.Matrix4().makeRotationFromQuaternion(q);
-      // Rotate the velocity vector
-      newVelocity.applyMatrix4(m);
-      // Compensate for gravity
-      // newVelocity.y -= body.world.physicsWorld.gravity.y / body.character.world.physicsFrameRate;
-      // Apply velocity
-      this.characterCapsule.body.velocity.x = newVelocity.x;
-      this.characterCapsule.body.velocity.y = newVelocity.y;
-      this.characterCapsule.body.velocity.z = newVelocity.z;
-      // Ground character
-      this.characterCapsule.body.position.y =
-        this.rayResult.hitPointWorld.y +
-        this.rayCastLength +
-        newVelocity.y / 60;
-    } else {
-      // If we're in air
-      this.characterCapsule.body.velocity.x = newVelocity.x;
-      this.characterCapsule.body.velocity.y = newVelocity.y;
-      this.characterCapsule.body.velocity.z = newVelocity.z;
-    }
-  }
+  //     // Measure the normal vector offset from direct "up" vector
+  //     // and transform it into a matrix
+  //     const up = new THREE.Vector3(0, 1, 0);
+  //     const normal = new THREE.Vector3(
+  //       this.rayResult.hitNormalWorld.x,
+  //       this.rayResult.hitNormalWorld.y,
+  //       this.rayResult.hitNormalWorld.z
+  //     );
+  //     const q = new THREE.Quaternion().setFromUnitVectors(up, normal);
+  //     const m = new THREE.Matrix4().makeRotationFromQuaternion(q);
+  //     // Rotate the velocity vector
+  //     newVelocity.applyMatrix4(m);
+  //     // Compensate for gravity
+  //     // newVelocity.y -= body.world.physicsWorld.gravity.y / body.character.world.physicsFrameRate;
+  //     // Apply velocity
+  //     this.characterCapsule.body.velocity.x = newVelocity.x;
+  //     this.characterCapsule.body.velocity.y = newVelocity.y;
+  //     this.characterCapsule.body.velocity.z = newVelocity.z;
+  //     // Ground character
+  //     this.characterCapsule.body.position.y =
+  //       this.rayResult.hitPointWorld.y +
+  //       this.rayCastLength +
+  //       newVelocity.y / 60;
+  //   } else {
+  //     // If we're in air
+  //     this.characterCapsule.body.velocity.x = newVelocity.x;
+  //     this.characterCapsule.body.velocity.y = newVelocity.y;
+  //     this.characterCapsule.body.velocity.z = newVelocity.z;
+  //   }
+  // }
 
   public takeControl(): void {
     if (this.world !== undefined) {
@@ -380,7 +410,8 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       else action.justReleased = true;
 
       // Tell player to handle states according to new input
-      this.charState.onInputChange();
+      //this.charState.onInputChange();
+      //ColyseusStore.getInstance().GetRoom()?.send("key.input", action);
 
       // Reset the 'just' attributes
       action.justPressed = false;
@@ -403,15 +434,20 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       this.world.cameraOperator.characterCaller = this;
       this.world.inputManager.setInputReceiver(this.world.cameraOperator);
     } else {
-      for (const action in this.actions) {
-        if (this.actions.hasOwnProperty(action)) {
-          const binding = this.actions[action];
+      ColyseusStore.getInstance().GetRoom()?.send("key.input", {
+        event,
+        code,
+        pressed,
+      });
+      // for (const action in this.actions) {
+      //   if (this.actions.hasOwnProperty(action)) {
+      //     const binding = this.actions[action];
 
-          if (_.includes(binding.eventCodes, code)) {
-            this.triggerAction(action, pressed);
-          }
-        }
-      }
+      //     if (_.includes(binding.eventCodes, code)) {
+      //       this.triggerAction(action, pressed);
+      //     }
+      //   }
+      // }
     }
   }
   handleMouseButton(event: MouseEvent, code: string, pressed: boolean) {}
@@ -430,6 +466,13 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       this.world.camera.position
     );
     this.getWorldPosition(this.world.cameraOperator.target);
+
+    if (Utils.checkDiffVec(this.viewOldVector, this.viewVector)) {
+      this.viewOldVector.copy(this.viewVector);
+      ColyseusStore.getInstance()
+        .GetRoom()
+        ?.send("view.update", Utils.fixedVec3(this.viewVector));
+    }
   }
 
   public setAnimations(animations: []): void {

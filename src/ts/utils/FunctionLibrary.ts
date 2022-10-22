@@ -190,6 +190,22 @@ export function appplyVectorMatrixXZ(
   return new THREE.Vector3(a.x * b.z + a.z * b.x, b.y, a.z * b.z + -a.x * b.x);
 }
 
+export function getGeometryInfo(
+  geometry: THREE.BufferGeometry,
+  vertices: number[],
+  indices: number[]
+) {
+  if (geometry.index === null) {
+    vertices.push(...(geometry.attributes.position.array as number[]));
+  } else {
+    vertices.push(
+      ...(geometry.clone().toNonIndexed().attributes.position.array as number[])
+    );
+  }
+
+  indices.push(...Object.keys(vertices).map(Number));
+}
+
 export function createTrimesh(geometry: THREE.BufferGeometry): CANNON.Trimesh {
   let vertices;
   if (geometry.index === null) {
@@ -319,4 +335,47 @@ export function characterStateFactory(stateName: string, character: Character) {
     default:
       return new Idle(character);
   }
+}
+
+export function fixedVec3(vec: THREE.Vector3) {
+  return new THREE.Vector3(
+    +vec.x.toFixed(2),
+    +vec.y.toFixed(2),
+    +vec.z.toFixed(2)
+  );
+}
+export function fixedQuat(quat: THREE.Quaternion) {
+  return new THREE.Quaternion(
+    +quat.x.toFixed(2),
+    +quat.y.toFixed(2),
+    +quat.z.toFixed(2),
+    +quat.w.toFixed(2)
+  );
+}
+
+export function checkDiffVec(vec1: THREE.Vector3, vec2: THREE.Vector3) {
+  if (
+    Math.abs(vec1.x - vec2.x) +
+      Math.abs(vec1.y - vec2.y) +
+      Math.abs(vec1.z - vec2.z) >
+    0.005
+  ) {
+    return true;
+  }
+  return false;
+}
+export function checkDiffQuat(
+  quat1: THREE.Quaternion,
+  quat2: THREE.Quaternion
+) {
+  if (
+    Math.abs(quat1.x - quat2.x) +
+      Math.abs(quat1.y - quat2.y) +
+      Math.abs(quat1.z - quat2.z) +
+      Math.abs(quat1.w - quat2.w) >
+    0.005
+  ) {
+    return true;
+  }
+  return false;
 }
