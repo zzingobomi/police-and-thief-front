@@ -145,6 +145,7 @@ export class World {
     //         if (child.userData.hasOwnProperty("type")) {
     //           if (child.userData.type === "box") {
     //             const info = {
+    //               name: child.name,
     //               type: "box",
     //               position: [
     //                 child.position.x,
@@ -177,7 +178,7 @@ export class World {
     //               shape.collisionFilterMask = ~CollisionGroups.TrimeshColliders;
     //             });
 
-    //             this.physicsWorld.addBody(phys.body);
+    //             //this.physicsWorld.addBody(phys.body);
     //           } else if (
     //             child.userData.type === "trimesh" &&
     //             child instanceof THREE.Mesh
@@ -186,6 +187,7 @@ export class World {
     //             const indices: number[] = [];
     //             Utils.getGeometryInfo(child.geometry, vertices, indices);
     //             const info = {
+    //               name: child.name,
     //               type: "trimesh",
     //               position: [
     //                 child.position.x,
@@ -206,7 +208,7 @@ export class World {
     //             worldInfos.push(info);
 
     //             const phys = new TrimeshCollider(child, {});
-    //             this.physicsWorld.addBody(phys.body);
+    //             //this.physicsWorld.addBody(phys.body);
     //           }
 
     //           child.visible = false;
@@ -226,7 +228,7 @@ export class World {
     //             ) {
     //               if (scenarioData.userData.data === "spawn") {
     //                 if (scenarioData.userData.type === "player") {
-    //                   this.initCharacter(scenarioData);
+    //                   //this.initCharacter(scenarioData);
     //                 }
     //               }
     //             }
@@ -236,7 +238,7 @@ export class World {
     //     }
     //   }
     // });
-    // console.log(JSON.stringify(worldInfos));
+    //console.log(JSON.stringify(worldInfos));
   }
 
   private initLight() {
