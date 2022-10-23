@@ -344,6 +344,18 @@ export class World {
       myPlayer.setScale(player.scale);
     };
 
+    // player.stateName.onchange = (changes: any) => {
+    //   console.log(player.stateName);
+    // };
+
+    player.onChange = (changes: any) => {
+      changes.forEach((change: any) => {
+        if (change.field === "stateName") {
+          console.log(player.stateName);
+        }
+      });
+    };
+
     this.add(myPlayer);
     myPlayer.takeControl();
 
