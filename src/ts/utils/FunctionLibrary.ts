@@ -369,3 +369,30 @@ export function checkDiffQuat(
   }
   return false;
 }
+
+export function lerp(start: number, end: number, amt: number) {
+  return (1 - amt) * start + amt * end;
+}
+
+export function lerpVector(
+  start: THREE.Vector3,
+  end: THREE.Vector3,
+  amt: number
+) {
+  const lx = (1 - amt) * start.x + amt * end.x;
+  const ly = (1 - amt) * start.y + amt * end.y;
+  const lz = (1 - amt) * start.z + amt * end.z;
+  return new THREE.Vector3(lx, ly, lz);
+}
+
+export function lerpQuaternion(
+  start: THREE.Quaternion,
+  end: THREE.Quaternion,
+  amt: number
+) {
+  const lx = (1 - amt) * start.x + amt * end.x;
+  const ly = (1 - amt) * start.y + amt * end.y;
+  const lz = (1 - amt) * start.z + amt * end.z;
+  const lw = (1 - amt) * start.w + amt * end.w;
+  return new THREE.Quaternion(lx, ly, lz, lw);
+}

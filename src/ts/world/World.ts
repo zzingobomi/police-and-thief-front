@@ -22,6 +22,7 @@ import * as _ from "lodash";
 import { InputManager } from "../core/InputManager";
 import { CameraOperator } from "../core/CameraOperator";
 import { SignalType } from "../core/SignalType";
+import { ColyseusStore } from "../../store";
 
 export class World {
   public divContainer: HTMLDivElement;
@@ -98,7 +99,11 @@ export class World {
   private initSignal() {
     PubSub.subscribe(SignalType.CREATE_PLAYER, (msg, data) => {
       const { player, sessionId } = data;
-      this.createMyCharacter(player, sessionId);
+      if (ColyseusStore.getInstance().GetRoom()?.sessionId === sessionId) {
+        this.createMyCharacter(player, sessionId);
+      } else {
+        this.createRemoteCharacter(player, sessionId);
+      }
     });
   }
 
@@ -331,51 +336,44 @@ export class World {
     const myPlayer = new Character(model);
 
     myPlayer.setPosition(
-      new THREE.Vector3(player.position.x, player.position.y, player.position.z)
+      player.position.x,
+      player.position.y,
+      player.position.z
     );
-    //myPlayer.setQuaternion(player.quaternion);
-    //myPlayer.setScale(player.scale);
+    myPlayer.setQuaternion(
+      player.quaternion.x,
+      player.quaternion.y,
+      player.quaternion.z,
+      player.quaternion.w
+    );
+    myPlayer.setScale(player.scale.x, player.scale.y, player.scale.z);
 
-    player.position.onChange = (changes: any) => {
-      console.log(player.position.y);
-      myPlayer.setServerPosition(
-        new THREE.Vector3(
-          player.position.x,
-          player.position.y,
-          player.position.z
-        )
-      );
-    };
-    player.quaternion.onChange = (changes: any) => {
-      //myPlayer.setQuaternion(player.quaternion);
-    };
-    player.scale.onChange = (changes: any) => {
-      //myPlayer.setScale(player.scale);
-    };
-
-    player.onChange = (changes: any) => {
-      changes.forEach((change: any) => {
-        if (change.field === "stateName") {
-          myPlayer.setState(
-            Utils.characterStateFactory(player.stateName, myPlayer)
-          );
-        }
-      });
-    };
+    myPlayer.setOnChange(player);
 
     this.add(myPlayer);
     myPlayer.takeControl();
+  }
 
-    // const worldPos = new THREE.Vector3();
-    // initObject.getWorldPosition(worldPos);
-    // console.log(worldPos);
-    // player.setPosition(worldPos.x, worldPos.y, worldPos.z);
+  public async createRemoteCharacter(player: any, sessionId: string) {
+    const gltfLoader = new GLTFLoader();
+    const model = await gltfLoader.loadAsync("./glb/boxman.glb");
+    const remotePlayer = new Character(model);
 
-    // const forward = Utils.getForward(initObject);
-    // console.log(forward);
-    // player.setOrientation(forward, true);
+    remotePlayer.setPosition(
+      player.position.x,
+      player.position.y,
+      player.position.z
+    );
+    remotePlayer.setQuaternion(
+      player.quaternion.x,
+      player.quaternion.y,
+      player.quaternion.z,
+      player.quaternion.w
+    );
+    remotePlayer.setScale(player.scale.x, player.scale.y, player.scale.z);
 
-    // this.add(player);
-    // player.takeControl();
+    remotePlayer.setOnChange(player);
+
+    this.add(remotePlayer);
   }
 }
