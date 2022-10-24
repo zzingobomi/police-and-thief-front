@@ -330,28 +330,35 @@ export class World {
     const model = await gltfLoader.loadAsync("./glb/boxman.glb");
     const myPlayer = new Character(model);
 
-    myPlayer.setPosition(player.position);
-    myPlayer.setQuaternion(player.quaternion);
-    myPlayer.setScale(player.scale);
+    myPlayer.setPosition(
+      new THREE.Vector3(player.position.x, player.position.y, player.position.z)
+    );
+    //myPlayer.setQuaternion(player.quaternion);
+    //myPlayer.setScale(player.scale);
 
     player.position.onChange = (changes: any) => {
-      myPlayer.setPosition(player.position);
+      console.log(player.position.y);
+      myPlayer.setServerPosition(
+        new THREE.Vector3(
+          player.position.x,
+          player.position.y,
+          player.position.z
+        )
+      );
     };
     player.quaternion.onChange = (changes: any) => {
-      myPlayer.setQuaternion(player.quaternion);
+      //myPlayer.setQuaternion(player.quaternion);
     };
     player.scale.onChange = (changes: any) => {
-      myPlayer.setScale(player.scale);
+      //myPlayer.setScale(player.scale);
     };
-
-    // player.stateName.onchange = (changes: any) => {
-    //   console.log(player.stateName);
-    // };
 
     player.onChange = (changes: any) => {
       changes.forEach((change: any) => {
         if (change.field === "stateName") {
-          console.log(player.stateName);
+          myPlayer.setState(
+            Utils.characterStateFactory(player.stateName, myPlayer)
+          );
         }
       });
     };

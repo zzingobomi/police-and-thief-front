@@ -302,8 +302,8 @@ export function offsetCenterOfMass(
   body.position.vadd(worldCenterOfMass, body.position);
 }
 
-export function characterStateFactory(type: StateType, character: Character) {
-  switch (type) {
+export function characterStateFactory(typeName: string, character: Character) {
+  switch (typeName) {
     case StateType.Idle:
       return new Idle(character);
     case StateType.IdleRotateLeft:
