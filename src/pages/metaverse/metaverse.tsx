@@ -10,13 +10,13 @@ export const Metaverse = () => {
 
   useEffect(() => {
     let isMounted = true;
+    if (container.current && container.current.children.length > 0) return;
+    metaworld.current = new World();
     async function joinMetaverse() {
       const room = await client?.joinOrCreate("meta_room");
       if (room) {
         console.log("join room");
         ColyseusStore.getInstance().SetRoom(room);
-        if (container.current && container.current.children.length > 0) return;
-        metaworld.current = new World();
       }
     }
     if (isMounted) {

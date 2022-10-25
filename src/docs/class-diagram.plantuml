@@ -9,10 +9,26 @@ class:
 endheader
 
 class World {
+  inputManager: InputManager
+  cameraOperator: CameraOperator
+
   updatables: IUpdatable[]
+  vehicles: Vehicle[]
 
   +initWorld()
   +update()
+}
+
+interface IInputReceiver {
+  actions: { [action: string]: KeyBinding }
+
+  +handleKeyboardEvent()
+  +handleMouseButton()
+  +handleMouseMove()
+  +handleMouseWheel()
+
+  +inputReceiverInit()
+  +inputReceiverUpdate()
 }
 
 interface IUpdatable {
@@ -26,6 +42,19 @@ interface IWorldEntity {
   +removeFromWorld(world)
 }
 
+class InputManager {
+  inputReceiver: IInputReceiver
+
+  +setInputReceiver()
+
+  +boundOnMouseDown()
+  +boundOnKeyDown()  
+}
+
+class CameraOperator {
+  camera: THREE.Camera
+}
+
 class Character {
   charState: ICharacterState
 
@@ -37,11 +66,13 @@ class Character {
   +physicsPreStep()
   +feetRaycast()
   +physicsPostStep()
+
+  +takeControl()
 }
 
-'
-' Character State & Animation
-'
+'''
+''' Character State & Animation
+'''
 interface ICharacterState {
   +update()
   +onInputChange()
@@ -59,9 +90,25 @@ class CharacterStateBase {
   +setAppropriateStartWalkState()
 }
 
+'''
+''' Vehicle
+'''
+interface IControllable {
 
+}
 
+class Car {
+  entityType: EntityType
+  actions: { [action: string]: KeyBinding }
+}
 
+abstract class Vehicle {
+  +addToWorld()
+  +removeFromWorld()
+
+  +handleKeyboardEvent()
+  +handleMouseMove()
+}
 
 
 IWorldEntity <|-- IUpdatable
@@ -69,6 +116,14 @@ Character <|-- THREE.Object3D
 Character <|-- IWorldEntity
 
 World <-- Character
+World <-- CameraOperator
+World <-- InputManager
+World <-- Car
+
+InputManager <-- IInputReceiver
+
+CameraOperator <|-- IInputReceiver
+CameraOperator <|-- IUpdatable
 
 ''' Character State '''
 CharacterStateBase <|-- ICharacterState
@@ -84,6 +139,18 @@ StartWalkBackRight <|-- StartWalkBase
 Walk <|-- CharacterStateBase
 
 Character <-- ICharacterState
+
+''' Vehicle '''
+IControllable <|-- IInputReceiver
+
+Vehicle <|-- THREE.Object3D
+Vehicle <|-- IWorldEntity
+
+Car <|-- Vehicle
+Car <|-- IControllable
+
+
+
 
 
 

@@ -23,6 +23,8 @@ import { InputManager } from "../core/InputManager";
 import { CameraOperator } from "../core/CameraOperator";
 import { SignalType } from "../core/SignalType";
 import { ColyseusStore } from "../../store";
+import { Vehicle } from "../vehicles/Vehicle";
+import { Car } from "../vehicles/Car";
 
 export class World {
   public divContainer: HTMLDivElement;
@@ -40,6 +42,8 @@ export class World {
   //private controls: OrbitControls;
 
   public updatables: IUpdatable[] = [];
+  public vehicles: Vehicle[] = [];
+
   private previousTime = 0;
 
   constructor() {
@@ -132,6 +136,25 @@ export class World {
               child.visible = false;
             }
           }
+          if (child.userData.data === "scenario") {
+            if (
+              child.userData.hasOwnProperty("spawn_always") &&
+              child.userData.spawn_always === "true"
+            ) {
+              child.traverse((scenarioData) => {
+                if (
+                  scenarioData.hasOwnProperty("userData") &&
+                  scenarioData.userData.hasOwnProperty("data")
+                ) {
+                  if (scenarioData.userData.data === "spawn") {
+                    if (scenarioData.userData.type === "car") {
+                      this.createCar(scenarioData);
+                    }
+                  }
+                }
+              });
+            }
+          }
         }
       }
     });
@@ -139,6 +162,7 @@ export class World {
 
     // josn 뽑아내기..
     // const worldInfos: any[] = [];
+    // const vehicleInfos: any[] = [];
     // gltf.scene.traverse((child) => {
     //   if (child.hasOwnProperty("userData")) {
     //     if (child.type === "Mesh") {
@@ -220,7 +244,6 @@ export class World {
     //         }
     //       }
 
-    //       // TODO: scenario 연구
     //       if (child.userData.data === "scenario") {
     //         if (
     //           child.userData.hasOwnProperty("default") &&
@@ -233,7 +256,43 @@ export class World {
     //             ) {
     //               if (scenarioData.userData.data === "spawn") {
     //                 if (scenarioData.userData.type === "player") {
-    //                   //this.initCharacter(scenarioData);
+    //                   //this.createMyCharacter(scenarioData);
+    //                 }
+    //               }
+    //             }
+    //           });
+    //         } else if (
+    //           child.userData.hasOwnProperty("spawn_always") &&
+    //           child.userData.spawn_always === "true"
+    //         ) {
+    //           child.traverse((scenarioData) => {
+    //             if (
+    //               scenarioData.hasOwnProperty("userData") &&
+    //               scenarioData.userData.hasOwnProperty("data")
+    //             ) {
+    //               if (scenarioData.userData.data === "spawn") {
+    //                 if (scenarioData.userData.type === "car") {
+    //                   const info = {
+    //                     name: scenarioData.name,
+    //                     type: "car",
+    //                     position: [
+    //                       scenarioData.position.x,
+    //                       scenarioData.position.y,
+    //                       scenarioData.position.z,
+    //                     ],
+    //                     quaternion: [
+    //                       scenarioData.quaternion.x,
+    //                       scenarioData.quaternion.y,
+    //                       scenarioData.quaternion.z,
+    //                       scenarioData.quaternion.w,
+    //                     ],
+    //                     scale: [
+    //                       scenarioData.scale.x,
+    //                       scenarioData.scale.y,
+    //                       scenarioData.scale.z,
+    //                     ],
+    //                   };
+    //                   vehicleInfos.push(info);
     //                 }
     //               }
     //             }
@@ -243,7 +302,8 @@ export class World {
     //     }
     //   }
     // });
-    //console.log(JSON.stringify(worldInfos));
+    // console.log(JSON.stringify(worldInfos));
+    // console.log(JSON.stringify(vehicleInfos));
   }
 
   private initLight() {
@@ -253,6 +313,28 @@ export class World {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 1, 0.5).normalize();
     this.scene.add(directionalLight);
+  }
+
+  private async createCar(initialData: THREE.Object3D) {
+    const gltfLoader = new GLTFLoader();
+    const model = await gltfLoader.loadAsync("./glb/car.glb");
+    const car = new Car(model);
+
+    // TODO: 왜 안보이지..?
+    const worldPos = new THREE.Vector3();
+    const worldQuat = new THREE.Quaternion();
+    initialData.getWorldPosition(worldPos);
+    initialData.getWorldQuaternion(worldQuat);
+
+    car.position.set(worldPos.x, worldPos.y, worldPos.z);
+    car.quaternion.set(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w);
+    car.scale.set(
+      initialData.scale.x,
+      initialData.scale.y,
+      initialData.scale.z
+    );
+
+    this.add(car);
   }
 
   // private initDebugRenderer() {
