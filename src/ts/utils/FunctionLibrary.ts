@@ -14,6 +14,14 @@ import { StartWalkForward } from "../characters/character_states/StartWalkForwar
 import { IdleRotateLeft } from "../characters/character_states/IdleRotateLeft";
 import { IdleRotateRight } from "../characters/character_states/IdleRotateRight";
 import { StateType } from "../enums/StateType";
+import { EndWalk } from "../characters/character_states/EndWalk";
+import { Falling } from "../characters/character_states/Falling";
+import { DropIdle } from "../characters/character_states/DropIdle";
+import { DropRolling } from "../characters/character_states/DropRolling";
+import { DropRunning } from "../characters/character_states/DropRunning";
+import { JumpIdle } from "../characters/character_states/JumpIdle";
+import { JumpRunning } from "../characters/character_states/JumpRunning";
+import { Sprint } from "../characters/character_states/Sprint";
 
 interface Face3 {
   a: number;
@@ -302,7 +310,10 @@ export function offsetCenterOfMass(
   body.position.vadd(worldCenterOfMass, body.position);
 }
 
-export function characterStateFactory(typeName: string, character: Character) {
+export function characterStateFactory(
+  typeName: StateType,
+  character: Character
+) {
   switch (typeName) {
     case StateType.Idle:
       return new Idle(character);
@@ -322,6 +333,22 @@ export function characterStateFactory(typeName: string, character: Character) {
       return new StartWalkForward(character);
     case StateType.Walk:
       return new Walk(character);
+    case StateType.EndWalk:
+      return new EndWalk(character);
+    case StateType.Falling:
+      return new Falling(character);
+    case StateType.DropIdle:
+      return new DropIdle(character);
+    case StateType.DropRolling:
+      return new DropRolling(character);
+    case StateType.DropRunning:
+      return new DropRunning(character);
+    case StateType.JumpIdle:
+      return new JumpIdle(character);
+    case StateType.JumpRunning:
+      return new JumpRunning(character);
+    case StateType.Sprint:
+      return new Sprint(character);
     default:
       return new Idle(character);
   }
