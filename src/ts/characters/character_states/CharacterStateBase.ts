@@ -13,17 +13,17 @@ export abstract class CharacterStateBase implements ICharacterState {
     this.name = name;
     this.character = character;
 
-    // this.character.velocitySimulator.damping =
-    //   this.character.defaultVelocitySimulatorDamping;
-    // this.character.velocitySimulator.mass =
-    //   this.character.defaultVelocitySimulatorMass;
+    this.character.velocitySimulator.damping =
+      this.character.defaultVelocitySimulatorDamping;
+    this.character.velocitySimulator.mass =
+      this.character.defaultVelocitySimulatorMass;
 
-    // this.character.rotationSimulator.damping =
-    //   this.character.defaultRotationSimulatorDamping;
-    // this.character.rotationSimulator.mass =
-    //   this.character.defaultRotationSimulatorMass;
+    this.character.rotationSimulator.damping =
+      this.character.defaultRotationSimulatorDamping;
+    this.character.rotationSimulator.mass =
+      this.character.defaultRotationSimulatorMass;
 
-    // this.character.setArcadeVelocityInfluence(1, 0, 1);
+    this.character.setArcadeVelocityInfluence(1, 0, 1);
 
     this.timer = 0;
   }
@@ -54,54 +54,89 @@ export abstract class CharacterStateBase implements ICharacterState {
     }
   }
 
-  // public noDirection(): boolean {
-  //   return (
-  //     !this.character.actions.up.isPressed &&
-  //     !this.character.actions.down.isPressed &&
-  //     !this.character.actions.left.isPressed &&
-  //     !this.character.actions.right.isPressed
-  //   );
-  // }
+  public noDirection(): boolean {
+    return (
+      !this.character.actions.up.isPressed &&
+      !this.character.actions.down.isPressed &&
+      !this.character.actions.left.isPressed &&
+      !this.character.actions.right.isPressed
+    );
+  }
 
-  // public anyDirection(): boolean {
-  //   return (
-  //     this.character.actions.up.isPressed ||
-  //     this.character.actions.down.isPressed ||
-  //     this.character.actions.left.isPressed ||
-  //     this.character.actions.right.isPressed
-  //   );
-  // }
+  public anyDirection(): boolean {
+    return (
+      this.character.actions.up.isPressed ||
+      this.character.actions.down.isPressed ||
+      this.character.actions.left.isPressed ||
+      this.character.actions.right.isPressed
+    );
+  }
 
-  // public setAppropriateStartWalkState() {
-  //   const range = Math.PI;
-  //   const angle = Utils.getSignedAngleBetweenVectors(
-  //     this.character.orientation,
-  //     this.character.getCameraRelativeMovementVector()
-  //   );
+  public fallInAir(): void {
+    if (!this.character.rayHasHit) {
+      this.character.setState(
+        Utils.characterStateFactory(StateType.Falling, this.character)
+      );
+    }
+  }
 
-  //   if (angle > range * 0.8) {
-  //     this.character.setState(
-  //       Utils.characterStateFactory(StateType.StartWalkBackLeft, this.character)
-  //     );
-  //   } else if (angle < -range * 0.8) {
-  //     this.character.setState(
-  //       Utils.characterStateFactory(
-  //         StateType.StartWalkBackRight,
-  //         this.character
-  //       )
-  //     );
-  //   } else if (angle > range * 0.3) {
-  //     this.character.setState(
-  //       Utils.characterStateFactory(StateType.StartWalkLeft, this.character)
-  //     );
-  //   } else if (angle < -range * 0.3) {
-  //     this.character.setState(
-  //       Utils.characterStateFactory(StateType.StartWalkRight, this.character)
-  //     );
-  //   } else {
-  //     this.character.setState(
-  //       Utils.characterStateFactory(StateType.StartWalkForward, this.character)
-  //     );
-  //   }
-  // }
+  public setAppropriateStartWalkState() {
+    const range = Math.PI;
+    const angle = Utils.getSignedAngleBetweenVectors(
+      this.character.orientation,
+      this.character.getCameraRelativeMovementVector()
+    );
+    if (angle > range * 0.8) {
+      this.character.setState(
+        Utils.characterStateFactory(StateType.StartWalkBackLeft, this.character)
+      );
+    } else if (angle < -range * 0.8) {
+      this.character.setState(
+        Utils.characterStateFactory(
+          StateType.StartWalkBackRight,
+          this.character
+        )
+      );
+    } else if (angle > range * 0.3) {
+      this.character.setState(
+        Utils.characterStateFactory(StateType.StartWalkLeft, this.character)
+      );
+    } else if (angle < -range * 0.3) {
+      this.character.setState(
+        Utils.characterStateFactory(StateType.StartWalkRight, this.character)
+      );
+    } else {
+      this.character.setState(
+        Utils.characterStateFactory(StateType.StartWalkForward, this.character)
+      );
+    }
+  }
+
+  public setAppropriateDropState(): void {
+    if (this.character.groundImpactData.y < -6) {
+      this.character.setState(
+        Utils.characterStateFactory(StateType.DropRolling, this.character)
+      );
+    } else if (this.anyDirection()) {
+      if (this.character.groundImpactData.y < -2) {
+        this.character.setState(
+          Utils.characterStateFactory(StateType.DropRunning, this.character)
+        );
+      } else {
+        if (this.character.actions.run.isPressed) {
+          this.character.setState(
+            Utils.characterStateFactory(StateType.Sprint, this.character)
+          );
+        } else {
+          this.character.setState(
+            Utils.characterStateFactory(StateType.Walk, this.character)
+          );
+        }
+      }
+    } else {
+      this.character.setState(
+        Utils.characterStateFactory(StateType.DropIdle, this.character)
+      );
+    }
+  }
 }

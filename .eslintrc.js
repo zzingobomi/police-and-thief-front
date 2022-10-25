@@ -24,5 +24,6 @@ module.exports = {
     "react/require-render-return": "off",
     "react/react-in-jsx-scope": "off",
     "react/no-unescaped-entities": "off",
+    "prefer-const": "off",
   },
 };

@@ -35,19 +35,19 @@ export function setDefaults(options: {}, defaults: {}): {} {
   return _.defaults({}, _.clone(options), defaults);
 }
 
-export function threeVector(vec: CANNON.Vec3): THREE.Vector3 {
+export function cannon2threeVector(vec: CANNON.Vec3): THREE.Vector3 {
   return new THREE.Vector3(vec.x, vec.y, vec.z);
 }
 
-export function cannonVector(vec: THREE.Vector3): CANNON.Vec3 {
+export function three2cannonVector(vec: THREE.Vector3): CANNON.Vec3 {
   return new CANNON.Vec3(vec.x, vec.y, vec.z);
 }
 
-export function threeQuat(quat: CANNON.Quaternion): THREE.Quaternion {
+export function cannon2threeQuat(quat: CANNON.Quaternion): THREE.Quaternion {
   return new THREE.Quaternion(quat.x, quat.y, quat.z, quat.w);
 }
 
-export function cannonQuat(quat: THREE.Quaternion): CANNON.Quaternion {
+export function three2cannonQuat(quat: THREE.Quaternion): CANNON.Quaternion {
   return new CANNON.Quaternion(quat.x, quat.y, quat.z, quat.w);
 }
 
@@ -422,4 +422,12 @@ export function lerpQuaternion(
   const lz = (1 - amt) * start.z + amt * end.z;
   const lw = (1 - amt) * start.w + amt * end.w;
   return new THREE.Quaternion(lx, ly, lz, lw);
+}
+
+export function haveSameSigns(n1: number, n2: number): boolean {
+  return n1 < 0 === n2 < 0;
+}
+
+export function haveDifferentSigns(n1: number, n2: number): boolean {
+  return n1 < 0 !== n2 < 0;
 }

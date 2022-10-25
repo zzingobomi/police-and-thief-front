@@ -20,7 +20,7 @@ export const Metaverse = () => {
       }
     }
     if (isMounted) {
-      joinMetaverse();
+      //joinMetaverse();
     }
 
     return () => {

@@ -34,8 +34,8 @@ export class World {
 
   public sky: Sky;
 
-  //public physicsWorld: CANNON.World;
-  //public cannonDebugRenderer: CannonDebugRenderer;
+  public physicsWorld: CANNON.World;
+  public cannonDebugRenderer: CannonDebugRenderer;
 
   public inputManager: InputManager;
   public cameraOperator: CameraOperator;
@@ -53,13 +53,13 @@ export class World {
     this.initScene();
     this.initCamera();
     this.initSignal();
-    //this.initPhysics();
+    this.initPhysics();
     this.initOther();
     this.initWorld();
     this.initBackground();
     this.initLight();
 
-    //this.initDebugRenderer();
+    this.initDebugRenderer();
     //this.initControls();
 
     window.onresize = this.resize.bind(this);
@@ -103,21 +103,16 @@ export class World {
   private initSignal() {
     PubSub.subscribe(SignalType.CREATE_PLAYER, (msg, data) => {
       const { player, sessionId } = data;
-      if (ColyseusStore.getInstance().GetRoom()?.sessionId === sessionId) {
-        this.createMyCharacter(player, sessionId);
-      } else {
-        this.createRemoteCharacter(player, sessionId);
-      }
     });
   }
 
-  // private initPhysics() {
-  //   this.physicsWorld = new CANNON.World();
-  //   this.physicsWorld.gravity.set(0, -9.81, 0);
-  //   this.physicsWorld.broadphase = new CANNON.SAPBroadphase(this.physicsWorld);
-  //   //this.physicsWorld.solver.iterations = 10;
-  //   this.physicsWorld.allowSleep = true;
-  // }
+  private initPhysics() {
+    this.physicsWorld = new CANNON.World();
+    this.physicsWorld.gravity.set(0, -9.81, 0);
+    this.physicsWorld.broadphase = new CANNON.SAPBroadphase(this.physicsWorld);
+    //this.physicsWorld.solver.iterations = 10;
+    this.physicsWorld.allowSleep = true;
+  }
 
   private initOther() {
     // Initialization
@@ -130,14 +125,63 @@ export class World {
     const gltf = await gltfLoader.loadAsync("./glb/world.glb");
     gltf.scene.traverse((child) => {
       if (child.hasOwnProperty("userData")) {
+        if (child.type === "Mesh") {
+          // TODO: CSM
+        }
+
         if (child.userData.hasOwnProperty("data")) {
           if (child.userData.data === "physics") {
             if (child.userData.hasOwnProperty("type")) {
+              if (child.userData.type === "box") {
+                let phys = new BoxCollider({
+                  size: new THREE.Vector3(
+                    child.scale.x,
+                    child.scale.y,
+                    child.scale.z
+                  ),
+                });
+                phys.body.position.copy(
+                  Utils.three2cannonVector(child.position)
+                );
+                phys.body.quaternion.copy(
+                  Utils.three2cannonQuat(child.quaternion)
+                );
+                phys.body.updateAABB();
+
+                phys.body.shapes.forEach((shape) => {
+                  shape.collisionFilterMask = ~CollisionGroups.TrimeshColliders;
+                });
+
+                this.physicsWorld.addBody(phys.body);
+              } else if (
+                child.userData.type === "trimesh" &&
+                child instanceof THREE.Mesh
+              ) {
+                let phys = new TrimeshCollider(child, {});
+                this.physicsWorld.addBody(phys.body);
+              }
+
               child.visible = false;
             }
           }
           if (child.userData.data === "scenario") {
             if (
+              child.userData.hasOwnProperty("default") &&
+              child.userData.default === "true"
+            ) {
+              child.traverse((scenarioData) => {
+                if (
+                  scenarioData.hasOwnProperty("userData") &&
+                  scenarioData.userData.hasOwnProperty("data")
+                ) {
+                  if (scenarioData.userData.data === "spawn") {
+                    if (scenarioData.userData.type === "player") {
+                      this.createMyCharacter(scenarioData);
+                    }
+                  }
+                }
+              });
+            } else if (
               child.userData.hasOwnProperty("spawn_always") &&
               child.userData.spawn_always === "true"
             ) {
@@ -337,12 +381,12 @@ export class World {
     this.add(car);
   }
 
-  // private initDebugRenderer() {
-  //   this.cannonDebugRenderer = new CannonDebugRenderer(
-  //     this.scene,
-  //     this.physicsWorld
-  //   );
-  // }
+  private initDebugRenderer() {
+    this.cannonDebugRenderer = new CannonDebugRenderer(
+      this.scene,
+      this.physicsWorld
+    );
+  }
 
   // private initControls() {
   //   this.controls = new OrbitControls(this.camera, this.divContainer);
@@ -379,19 +423,19 @@ export class World {
   }
 
   private update(delta: number) {
-    //this.updatePhysics(delta);
+    this.updatePhysics(delta);
 
     this.updatables.forEach((entity) => {
       entity.update(delta);
     });
 
     // Physics debug
-    //this.cannonDebugRenderer.update();
+    this.cannonDebugRenderer.update();
   }
 
-  // private updatePhysics(delta: number) {
-  //   this.physicsWorld.step(1 / 60, delta, 3);
-  // }
+  private updatePhysics(delta: number) {
+    this.physicsWorld.step(1 / 60, delta, 3);
+  }
 
   public add(worldEntity: IWorldEntity): void {
     worldEntity.addToWorld(this);
@@ -412,50 +456,19 @@ export class World {
     _.pull(this.updatables, registree);
   }
 
-  public async createMyCharacter(player: any, sessionId: string) {
+  public async createMyCharacter(initialInfo: THREE.Object3D) {
     const gltfLoader = new GLTFLoader();
     const model = await gltfLoader.loadAsync("./glb/boxman.glb");
     const myPlayer = new Character(model);
 
-    myPlayer.setPosition(
-      player.position.x,
-      player.position.y,
-      player.position.z
-    );
-    myPlayer.setQuaternion(
-      player.quaternion.x,
-      player.quaternion.y,
-      player.quaternion.z,
-      player.quaternion.w
-    );
-    myPlayer.setScale(player.scale.x, player.scale.y, player.scale.z);
+    const worldPos = new THREE.Vector3();
+    initialInfo.getWorldPosition(worldPos);
+    myPlayer.setPosition(worldPos.x, worldPos.y, worldPos.z);
 
-    myPlayer.setOnChange(player);
+    const forward = Utils.getForward(initialInfo);
+    myPlayer.setOrientation(forward, true);
 
     this.add(myPlayer);
     myPlayer.takeControl();
-  }
-
-  public async createRemoteCharacter(player: any, sessionId: string) {
-    const gltfLoader = new GLTFLoader();
-    const model = await gltfLoader.loadAsync("./glb/boxman.glb");
-    const remotePlayer = new Character(model);
-
-    remotePlayer.setPosition(
-      player.position.x,
-      player.position.y,
-      player.position.z
-    );
-    remotePlayer.setQuaternion(
-      player.quaternion.x,
-      player.quaternion.y,
-      player.quaternion.z,
-      player.quaternion.w
-    );
-    remotePlayer.setScale(player.scale.x, player.scale.y, player.scale.z);
-
-    remotePlayer.setOnChange(player);
-
-    this.add(remotePlayer);
   }
 }
