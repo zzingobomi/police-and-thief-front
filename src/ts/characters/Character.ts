@@ -15,6 +15,11 @@ import { RelativeSpringSimulator } from "../physics/colliders/spring_simulation/
 import { ColyseusStore } from "../../store";
 import { ClosestObjectFinder } from "../core/ClosestObjectFinder";
 import { Vehicle } from "../vehicles/Vehicle";
+import { IControllable } from "../interfaces/IControllable";
+import { VehicleSeat } from "../vehicles/VehicleSeat";
+import { VehicleEntryInstance } from "./VehicleEntryInstance";
+import { SeatType } from "../enums/SeatType";
+import { Object3D } from "three";
 
 export class Character extends THREE.Object3D implements IWorldEntity {
   public updateOrder = 1;
@@ -60,6 +65,11 @@ export class Character extends THREE.Object3D implements IWorldEntity {
 
   public world: World;
   public charState: ICharacterState;
+
+  // Vehicles
+  public controlledObject: IControllable;
+  public occupyingSeat: VehicleSeat | null = null;
+  public vehicleEntryInstance: VehicleEntryInstance | null = null;
 
   constructor(gltf: any) {
     super();
@@ -163,7 +173,16 @@ export class Character extends THREE.Object3D implements IWorldEntity {
 
   public removeFromWorld(world: World) {}
 
+  public resetControls(): void {
+    for (const action in this.actions) {
+      if (this.actions.hasOwnProperty(action)) {
+        this.triggerAction(action, false);
+      }
+    }
+  }
+
   public update(delta: number) {
+    this.vehicleEntryInstance?.update(delta);
     this.charState?.update(delta);
 
     this.springMovement(delta);
@@ -567,12 +586,14 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   }
 
   public setCameraRelativeOrientationTarget() {
-    const moveVector = this.getCameraRelativeMovementVector();
+    if (this.vehicleEntryInstance === null) {
+      const moveVector = this.getCameraRelativeMovementVector();
 
-    if (moveVector.x === 0 && moveVector.y === 0 && moveVector.z === 0) {
-      this.setOrientation(this.orientation);
-    } else {
-      this.setOrientation(moveVector);
+      if (moveVector.x === 0 && moveVector.y === 0 && moveVector.z === 0) {
+        this.setOrientation(this.orientation);
+      } else {
+        this.setOrientation(moveVector);
+      }
     }
   }
 
@@ -601,8 +622,62 @@ export class Character extends THREE.Object3D implements IWorldEntity {
 
     if (vehicleFinder.closestObject !== undefined) {
       const vehicle = vehicleFinder.closestObject;
+      const vehicleEntryInstance = new VehicleEntryInstance(this);
+      vehicleEntryInstance.wantsToDrive = wantsToDrive;
 
       // Find best seat
+      const seatFinder = new ClosestObjectFinder<VehicleSeat>(this.position);
+      for (const seat of vehicle.seats) {
+        if (wantsToDrive) {
+          // Consider driver seats
+          if (seat.type === SeatType.Driver) {
+            seat.seatPointObject.getWorldPosition(worldPos);
+            seatFinder.consider(seat, worldPos);
+          }
+          // Consider passenger seats connected to driver seats
+          else if (seat.type === SeatType.Passenger) {
+            for (const connSeat of seat.connectedSeats) {
+              if (connSeat.type === SeatType.Driver) {
+                seat.seatPointObject.getWorldPosition(worldPos);
+                seatFinder.consider(seat, worldPos);
+                break;
+              }
+            }
+          }
+        } else {
+          // Consider passenger seats
+          if (seat.type === SeatType.Passenger) {
+            seat.seatPointObject.getWorldPosition(worldPos);
+            seatFinder.consider(seat, worldPos);
+          }
+        }
+      }
+
+      if (seatFinder.closestObject !== undefined) {
+        const targetSeat = seatFinder.closestObject;
+        vehicleEntryInstance.targetSeat = targetSeat;
+
+        const entryPointFinder = new ClosestObjectFinder<Object3D>(
+          this.position
+        );
+
+        for (const point of targetSeat.entryPoints) {
+          point.getWorldPosition(worldPos);
+          entryPointFinder.consider(point, worldPos);
+        }
+
+        if (entryPointFinder.closestObject !== undefined) {
+          vehicleEntryInstance.entryPoint = entryPointFinder.closestObject;
+          this.triggerAction("up", true);
+          this.vehicleEntryInstance = vehicleEntryInstance;
+        }
+      }
     }
+  }
+
+  public enterVehicle(seat: VehicleSeat, entryPoint: THREE.Object3D) {
+    this.resetControls();
+
+    // TODO:
   }
 }

@@ -59,15 +59,21 @@ class Character {
   charState: ICharacterState
 
   characterCapsule: CapsuleCollider
-
-  ''' Raycast '''
+  
   rayResult: CANNON.RaycastResult  
+
+  controlledObject: IControllable
+  occupyingSeat: VehicleSeat
+  vehicleEntryInstance: VehicleEntryInstance
 
   +physicsPreStep()
   +feetRaycast()
   +physicsPostStep()
 
   +takeControl()
+
+  +findVehicleToEnter()
+  +enterVehicle()
 }
 
 '''
@@ -114,6 +120,7 @@ abstract class Vehicle {
 
   +addToWorld()
   +removeFromWorld()
+  -connectedSeats()
 
   +handleKeyboardEvent()
   +handleMouseMove()
@@ -128,10 +135,20 @@ class Wheel {
 class VehicleSeat {
   vehicle: IControllable
   seatPointObject: THREE.Object3D
+  connectedSeats: VehicleSeat[]
+  type: SeatType
+  entryPoints: THREE.Object3D[]
+  door: VehicleDoor
+  occupiedBy: Character
+
+  +update()
 }
 
 class VehicleEntryInstance {
   character: Character
+  targetSeat: VehicleSeat
+  entryPoint: THREE.Object3D
+  wantsToDrive: boolean
 
   +update()
 }
@@ -176,6 +193,8 @@ Vehicle <-- VehicleSeat
 
 Car <|-- Vehicle
 Car <|-- IControllable
+
+Character <-- VehicleEntryInstance
 
 
 

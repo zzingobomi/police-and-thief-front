@@ -121,6 +121,33 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
         }
       }
     });
+
+    if (this.collision.shapes.length === 0) {
+      console.warn("Vehicle " + typeof this + " has no collision data.");
+    }
+    if (this.seats.length === 0) {
+      console.warn("Vehicle " + typeof this + " has no seats.");
+    } else {
+      this.connectSeats();
+    }
+  }
+
+  private connectSeats() {
+    // TODO: 로직을 좀더 단순하게 할 순 없을까..
+    for (const firstSeat of this.seats) {
+      if (firstSeat.connectedSeatsString !== undefined) {
+        const conn_seat_names = firstSeat.connectedSeatsString.split(";");
+        for (const conn_seat_name of conn_seat_names) {
+          if (conn_seat_name.length > 0) {
+            for (const secondSeat of this.seats) {
+              if (secondSeat.seatPointObject.name === conn_seat_name) {
+                firstSeat.connectedSeats.push(secondSeat);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   addToWorld(world: World): void {
