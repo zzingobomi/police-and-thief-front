@@ -23,6 +23,7 @@ export abstract class CharacterStateBase implements ICharacterState {
     this.character.rotationSimulator.mass =
       this.character.defaultRotationSimulatorMass;
 
+    this.character.arcadeVelocityIsAdditive = false;
     this.character.setArcadeVelocityInfluence(1, 0, 1);
 
     this.timer = 0;

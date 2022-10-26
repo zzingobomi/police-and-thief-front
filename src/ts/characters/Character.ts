@@ -301,6 +301,7 @@ export class Character extends THREE.Object3D implements IWorldEntity {
 
     let newVelocity = new THREE.Vector3();
 
+    // Falling, JumpRunning 외에는 항상 false임..
     if (this.arcadeVelocityIsAdditive) {
       newVelocity.copy(simulatedVelocity);
 
