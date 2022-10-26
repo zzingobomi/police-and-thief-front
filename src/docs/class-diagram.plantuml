@@ -103,11 +103,21 @@ class Car {
 }
 
 abstract class Vehicle {
+  controllingCharacter: Character
+  rayCastVehicle: CANNON.RaycastVehicle
+  wheels: Wheel[]
+
   +addToWorld()
   +removeFromWorld()
 
   +handleKeyboardEvent()
   +handleMouseMove()
+}
+
+class Wheel {
+  steering: boolean
+  drive: string
+  rayCastWheelInfoIndex: number
 }
 
 
@@ -145,6 +155,7 @@ IControllable <|-- IInputReceiver
 
 Vehicle <|-- THREE.Object3D
 Vehicle <|-- IWorldEntity
+Vehicle <-- Wheel
 
 Car <|-- Vehicle
 Car <|-- IControllable

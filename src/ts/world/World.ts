@@ -364,14 +364,13 @@ export class World {
     const model = await gltfLoader.loadAsync("./glb/car.glb");
     const car = new Car(model);
 
-    // TODO: 왜 안보이지..?
     const worldPos = new THREE.Vector3();
     const worldQuat = new THREE.Quaternion();
     initialData.getWorldPosition(worldPos);
     initialData.getWorldQuaternion(worldQuat);
 
-    car.position.set(worldPos.x, worldPos.y, worldPos.z);
-    car.quaternion.set(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w);
+    car.setPosition(worldPos.x, worldPos.y + 2, worldPos.z);
+    car.collision.quaternion.copy(Utils.three2cannonQuat(worldQuat));
     car.scale.set(
       initialData.scale.x,
       initialData.scale.y,
