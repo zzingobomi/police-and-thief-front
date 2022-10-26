@@ -28,6 +28,8 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
 
   private modelContainer: THREE.Group;
 
+  public entryBoxs: THREE.Mesh[] = [];
+
   constructor(gltf: GLTF, handlingSetup?: any) {
     super();
 
@@ -69,11 +71,6 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
     });
 
     this.help = new THREE.AxesHelper(2);
-
-    // where entry point?
-    this.seats.forEach((seat) => {
-      this.world?.scene.add(seat.pointBox);
-    });
   }
 
   public readVehicleData(gltf: GLTF) {
@@ -135,6 +132,18 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
     this.wheels.forEach((wheel) => {
       world.scene.attach(wheel.wheelObject);
     });
+
+    for (const seat of this.seats) {
+      for (const point of seat.entryPoints) {
+        const boxGeo = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        const boxMat = new THREE.MeshLambertMaterial({
+          color: 0xff00ff,
+        });
+        const box = new THREE.Mesh(boxGeo, boxMat);
+        this.entryBoxs.push(box);
+        world.scene.add(box);
+      }
+    }
   }
   removeFromWorld(world: World): void {
     if (!_.includes(world.vehicles, this)) {
@@ -180,6 +189,16 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
     }
 
     this.updateMatrixWorld();
+
+    let worldPos = new THREE.Vector3();
+    let i = 0;
+    for (const seat of this.seats) {
+      for (const point of seat.entryPoints) {
+        point.getWorldPosition(worldPos);
+        this.entryBoxs[i].position.set(worldPos.x, worldPos.y, worldPos.z);
+        i++;
+      }
+    }
   }
 
   handleKeyboardEvent(
