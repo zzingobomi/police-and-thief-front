@@ -13,6 +13,8 @@ import { Idle } from "./character_states/Idle";
 import { VectorSpringSimulator } from "../physics/colliders/spring_simulation/VectorSpringSimulator";
 import { RelativeSpringSimulator } from "../physics/colliders/spring_simulation/RelativeSpringSimulator";
 import { ColyseusStore } from "../../store";
+import { ClosestObjectFinder } from "../core/ClosestObjectFinder";
+import { Vehicle } from "../vehicles/Vehicle";
 
 export class Character extends THREE.Object3D implements IWorldEntity {
   public updateOrder = 1;
@@ -586,5 +588,21 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public jump(initJumpSpeed: number = -1): void {
     this.wantsToJump = true;
     this.initJumpSpeed = initJumpSpeed;
+  }
+
+  public findVehicleToEnter(wantsToDrive: boolean) {
+    let worldPos = new THREE.Vector3();
+
+    // Find best vehicle
+    const vehicleFinder = new ClosestObjectFinder<Vehicle>(this.position, 10);
+    this.world.vehicles.forEach((vehicle) => {
+      vehicleFinder.consider(vehicle, vehicle.position);
+    });
+
+    if (vehicleFinder.closestObject !== undefined) {
+      const vehicle = vehicleFinder.closestObject;
+
+      // Find best seat
+    }
   }
 }

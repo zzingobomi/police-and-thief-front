@@ -74,6 +74,10 @@ class Character {
 ''' Character State & Animation
 '''
 interface ICharacterState {
+  canFindVehiclesToEnter: boolean
+  canEnterVehicles: boolean
+  canLeaveVehicles: boolean
+  
   +update()
   +onInputChange()
 }
@@ -105,6 +109,7 @@ class Car {
 abstract class Vehicle {
   controllingCharacter: Character
   rayCastVehicle: CANNON.RaycastVehicle
+  seats: VehicleSeat[]
   wheels: Wheel[]
 
   +addToWorld()
@@ -118,6 +123,17 @@ class Wheel {
   steering: boolean
   drive: string
   rayCastWheelInfoIndex: number
+}
+
+class VehicleSeat {
+  vehicle: IControllable
+  seatPointObject: THREE.Object3D
+}
+
+class VehicleEntryInstance {
+  character: Character
+
+  +update()
 }
 
 
@@ -156,6 +172,7 @@ IControllable <|-- IInputReceiver
 Vehicle <|-- THREE.Object3D
 Vehicle <|-- IWorldEntity
 Vehicle <-- Wheel
+Vehicle <-- VehicleSeat
 
 Car <|-- Vehicle
 Car <|-- IControllable

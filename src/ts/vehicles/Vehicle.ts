@@ -9,14 +9,19 @@ import { Character } from "../characters/Character";
 import { GLTF } from "three-stdlib";
 import { CollisionGroups } from "../enums/CollisionGroups";
 import { Wheel } from "./Wheel";
+import { VehicleSeat } from "./VehicleSeat";
+import { KeyBinding } from "../core/KeyBinding";
+import { Vector3 } from "three";
 
 export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
   public updateOrder: number = 2;
   public abstract entityType: EntityType;
 
   public controllingCharacter: Character;
+  public actions: { [action: string]: KeyBinding } = {};
   public rayCastVehicle: CANNON.RaycastVehicle;
   public world: World | undefined;
+  public seats: VehicleSeat[] = [];
   public wheels: Wheel[] = [];
   public help: THREE.AxesHelper;
   public collision: CANNON.Body;
@@ -64,13 +69,18 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
     });
 
     this.help = new THREE.AxesHelper(2);
+
+    // where entry point?
+    this.seats.forEach((seat) => {
+      this.world?.scene.add(seat.pointBox);
+    });
   }
 
   public readVehicleData(gltf: GLTF) {
     gltf.scene.traverse((child) => {
       if (child.hasOwnProperty("userData")) {
         if (child.userData.data === "seat") {
-          //
+          this.seats.push(new VehicleSeat(this, child, gltf));
         }
         if (child.userData.data === "camera") {
           //
