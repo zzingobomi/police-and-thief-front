@@ -20,6 +20,8 @@ import { VehicleSeat } from "../vehicles/VehicleSeat";
 import { VehicleEntryInstance } from "./VehicleEntryInstance";
 import { SeatType } from "../enums/SeatType";
 import { Object3D } from "three";
+import { OpenVehicleDoor } from "./character_states/vehicles/OpenVehicleDoor";
+import { EnteringVehicle } from "./character_states/vehicles/EnteringVehicle";
 
 export class Character extends THREE.Object3D implements IWorldEntity {
   public updateOrder = 1;
@@ -724,8 +726,22 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public enterVehicle(seat: VehicleSeat, entryPoint: THREE.Object3D) {
     this.resetControls();
 
-    //if (seat.door?.rotation < 0.5) {
+    if (seat.door?.rotation < 0.5) {
+      this.setState(new OpenVehicleDoor(this, seat, entryPoint));
+    } else {
+      this.setState(new EnteringVehicle(this, seat, entryPoint));
+    }
+  }
 
-    //}
+  public occupySeat(seat: VehicleSeat): void {
+    this.occupyingSeat = seat;
+    seat.occupiedBy = this;
+  }
+
+  public leaveSeat(): void {
+    if (this.occupyingSeat !== null) {
+      this.occupyingSeat.occupiedBy = null;
+      this.occupyingSeat = null;
+    }
   }
 }

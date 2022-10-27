@@ -203,6 +203,10 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
       this.collision.interpolatedQuaternion.w
     );
 
+    this.seats.forEach((seat: VehicleSeat) => {
+      seat.update(delta);
+    });
+
     for (let i = 0; i < this.rayCastVehicle.wheelInfos.length; i++) {
       this.rayCastVehicle.updateWheelTransform(i);
       const transform = this.rayCastVehicle.wheelInfos[i].worldTransform;

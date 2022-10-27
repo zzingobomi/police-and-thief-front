@@ -25,6 +25,7 @@ import { Sprint } from "../characters/character_states/Sprint";
 import { Side } from "../enums/Side";
 import { OpenVehicleDoor } from "../characters/character_states/vehicles/OpenVehicleDoor";
 import { VehicleSeat } from "../vehicles/VehicleSeat";
+import { EnteringVehicle } from "../characters/character_states/vehicles/EnteringVehicle";
 
 interface Face3 {
   a: number;
@@ -359,6 +360,12 @@ export function characterStateFactory(
         option[0] as VehicleSeat,
         option[1] as THREE.Object3D
       );
+    case StateType.EnteringVehicle:
+      return new EnteringVehicle(
+        character,
+        option[0] as VehicleSeat,
+        option[1] as THREE.Object3D
+      );
     default:
       return new Idle(character);
   }
@@ -450,4 +457,12 @@ export function detectRelativeSide(
   const viewVector = to.position.clone().sub(from.position).normalize();
 
   return right.dot(viewVector) > 0 ? Side.Left : Side.Right;
+}
+
+export function easeInOutSine(x: number): number {
+  return -(Math.cos(Math.PI * x) - 1) / 2;
+}
+
+export function easeOutQuad(x: number): number {
+  return 1 - (1 - x) * (1 - x);
 }

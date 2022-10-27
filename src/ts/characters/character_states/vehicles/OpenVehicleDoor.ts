@@ -17,7 +17,7 @@ export class OpenVehicleDoor extends CharacterStateBase {
   private startRotation: THREE.Quaternion = new THREE.Quaternion();
   private endRotation: THREE.Quaternion = new THREE.Quaternion();
 
-  private factorSimluator: SpringSimulator;
+  private factorSimulator: SpringSimulator;
 
   constructor(
     character: Character,
@@ -51,8 +51,8 @@ export class OpenVehicleDoor extends CharacterStateBase {
     this.startRotation.copy(this.character.quaternion);
     this.endRotation.copy(this.entryPoint.quaternion);
 
-    this.factorSimluator = new SpringSimulator(60, 10, 0.5);
-    this.factorSimluator.target = 1;
+    this.factorSimulator = new SpringSimulator(60, 10, 0.5);
+    this.factorSimulator.target = 1;
   }
 
   public update(timeStep: number) {
@@ -82,12 +82,12 @@ export class OpenVehicleDoor extends CharacterStateBase {
         );
       }
     } else {
-      this.factorSimluator.simulate(timeStep);
+      this.factorSimulator.simulate(timeStep);
 
       const lerpPosition = new THREE.Vector3().lerpVectors(
         this.startPosition,
         this.endPosition,
-        this.factorSimluator.position
+        this.factorSimulator.position
       );
       this.character.setPosition(
         lerpPosition.x,
@@ -95,27 +95,10 @@ export class OpenVehicleDoor extends CharacterStateBase {
         lerpPosition.z
       );
 
-      this.character.quaternion.set(
-        THREE.MathUtils.lerp(
-          this.startRotation.x,
-          this.endRotation.x,
-          this.factorSimluator.position
-        ),
-        THREE.MathUtils.lerp(
-          this.startRotation.y,
-          this.endRotation.y,
-          this.factorSimluator.position
-        ),
-        THREE.MathUtils.lerp(
-          this.startRotation.z,
-          this.endRotation.z,
-          this.factorSimluator.position
-        ),
-        THREE.MathUtils.lerp(
-          this.startRotation.w,
-          this.endRotation.w,
-          this.factorSimluator.position
-        )
+      this.character.quaternion.slerpQuaternions(
+        this.startRotation,
+        this.endRotation,
+        this.factorSimulator.position
       );
     }
   }

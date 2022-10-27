@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { IControllable } from "../interfaces/IControllable";
 import { SeatType } from "../enums/SeatType";
 import { VehicleDoor } from "./VehicleDoor";
+import { Character } from "../characters/Character";
 
 export class VehicleSeat {
   public vehicle: IControllable;
@@ -14,6 +15,8 @@ export class VehicleSeat {
   public type: SeatType;
   public entryPoints: THREE.Object3D[] = [];
   public door: VehicleDoor;
+
+  public occupiedBy: Character | null = null;
 
   constructor(vehicle: IControllable, object: THREE.Object3D, gltf: any) {
     this.vehicle = vehicle;
@@ -54,6 +57,12 @@ export class VehicleSeat {
       if (object.userData.hasOwnProperty("connected_seats")) {
         this.connectedSeatsString = object.userData.connected_seats;
       }
+    }
+  }
+
+  public update(timeStep: number): void {
+    if (this.door !== undefined) {
+      this.door.update(timeStep);
     }
   }
 }

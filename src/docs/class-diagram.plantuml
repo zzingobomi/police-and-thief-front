@@ -163,6 +163,31 @@ class VehicleEntryInstance {
   +update()
 }
 
+class OpenVehicleDoor {
+  seat: VehicleSeat
+  entryPoint: THREE.Object3D
+
+  startPosition: THREE.Vector3
+  endPosition: THREE.Vector3
+  startRotation: THREE.Quaternion
+  endRotation: THREE.Quaternion
+
+  +update()
+}
+
+class EnteringVehicle {
+  vehicle: IControllable
+  seat: VehicleSeat
+
+  initialPositionOffset: THREE.Vector3
+  startPosition: THREE.Vector3
+  endPosition: THREE.Vector3
+  startRotation: THREE.Quaternion
+  endRotation: THREE.Quaternion
+
+  +update()  
+}
+
 
 IWorldEntity <|-- IUpdatable
 Character <|-- THREE.Object3D
@@ -192,6 +217,7 @@ StartWalkBackRight <|-- StartWalkBase
 Walk <|-- CharacterStateBase
 
 OpenVehicleDoor <|-- CharacterStateBase
+EnteringVehicle <|-- CharacterStateBase
 
 Character <-- ICharacterState
 
