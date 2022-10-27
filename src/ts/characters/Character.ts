@@ -71,6 +71,8 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public occupyingSeat: VehicleSeat | null = null;
   public vehicleEntryInstance: VehicleEntryInstance | null = null;
 
+  private physicsEnabled: boolean = true;
+
   constructor(gltf: any) {
     super();
 
@@ -185,16 +187,28 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     this.vehicleEntryInstance?.update(delta);
     this.charState?.update(delta);
 
-    this.springMovement(delta);
-    this.springRotation(delta);
-    this.rotateModel();
+    if (this.physicsEnabled) this.springMovement(delta);
+    if (this.physicsEnabled) this.springRotation(delta);
+    if (this.physicsEnabled) this.rotateModel();
     if (this.mixer !== undefined) this.mixer.update(delta);
 
-    this.position.set(
-      this.characterCapsule.body.interpolatedPosition.x,
-      this.characterCapsule.body.interpolatedPosition.y,
-      this.characterCapsule.body.interpolatedPosition.z
-    );
+    if (this.physicsEnabled) {
+      this.position.set(
+        this.characterCapsule.body.interpolatedPosition.x,
+        this.characterCapsule.body.interpolatedPosition.y,
+        this.characterCapsule.body.interpolatedPosition.z
+      );
+    } else {
+      const newPos = new THREE.Vector3();
+      this.getWorldPosition(newPos);
+
+      this.characterCapsule.body.position.copy(
+        Utils.three2cannonVector(newPos)
+      );
+      this.characterCapsule.body.interpolatedPosition.copy(
+        Utils.three2cannonVector(newPos)
+      );
+    }
 
     this.updateMatrixWorld();
   }
@@ -243,9 +257,19 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   }
 
   public setPosition(x: number, y: number, z: number) {
-    this.characterCapsule.body.previousPosition = new CANNON.Vec3(x, y, z);
-    this.characterCapsule.body.position = new CANNON.Vec3(x, y, z);
-    this.characterCapsule.body.interpolatedPosition = new CANNON.Vec3(x, y, z);
+    if (this.physicsEnabled) {
+      this.characterCapsule.body.previousPosition = new CANNON.Vec3(x, y, z);
+      this.characterCapsule.body.position = new CANNON.Vec3(x, y, z);
+      this.characterCapsule.body.interpolatedPosition = new CANNON.Vec3(
+        x,
+        y,
+        z
+      );
+    } else {
+      this.position.x = x;
+      this.position.y = y;
+      this.position.z = z;
+    }
   }
   public setQuaternion(x: number, y: number, z: number, w: number) {
     this.quaternion.x = x;
@@ -501,6 +525,18 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     this.velocityTarget.y = velY;
   }
 
+  public resetVelocity(): void {
+    this.velocity.x = 0;
+    this.velocity.y = 0;
+    this.velocity.z = 0;
+
+    this.characterCapsule.body.velocity.x = 0;
+    this.characterCapsule.body.velocity.y = 0;
+    this.characterCapsule.body.velocity.z = 0;
+
+    this.velocitySimulator.init();
+  }
+
   handleKeyboardEvent(event: KeyboardEvent, code: string, pressed: boolean) {
     // Free camera
     if (code === "KeyC" && pressed === true && event.shiftKey === true) {
@@ -606,6 +642,16 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     }
   }
 
+  public setPhysicsEnabled(value: boolean) {
+    this.physicsEnabled = value;
+
+    if (value === true) {
+      this.world.physicsWorld.addBody(this.characterCapsule.body);
+    } else {
+      this.world.physicsWorld.removeBody(this.characterCapsule.body);
+    }
+  }
+
   public jump(initJumpSpeed: number = -1): void {
     this.wantsToJump = true;
     this.initJumpSpeed = initJumpSpeed;
@@ -678,6 +724,8 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public enterVehicle(seat: VehicleSeat, entryPoint: THREE.Object3D) {
     this.resetControls();
 
-    // TODO:
+    //if (seat.door?.rotation < 0.5) {
+
+    //}
   }
 }

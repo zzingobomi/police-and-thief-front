@@ -22,6 +22,9 @@ import { DropRunning } from "../characters/character_states/DropRunning";
 import { JumpIdle } from "../characters/character_states/JumpIdle";
 import { JumpRunning } from "../characters/character_states/JumpRunning";
 import { Sprint } from "../characters/character_states/Sprint";
+import { Side } from "../enums/Side";
+import { OpenVehicleDoor } from "../characters/character_states/vehicles/OpenVehicleDoor";
+import { VehicleSeat } from "../vehicles/VehicleSeat";
 
 interface Face3 {
   a: number;
@@ -312,7 +315,8 @@ export function offsetCenterOfMass(
 
 export function characterStateFactory(
   typeName: StateType,
-  character: Character
+  character: Character,
+  ...option: unknown[]
 ) {
   switch (typeName) {
     case StateType.Idle:
@@ -349,6 +353,12 @@ export function characterStateFactory(
       return new JumpRunning(character);
     case StateType.Sprint:
       return new Sprint(character);
+    case StateType.OpenVehicleDoor:
+      return new OpenVehicleDoor(
+        character,
+        option[0] as VehicleSeat,
+        option[1] as THREE.Object3D
+      );
     default:
       return new Idle(character);
   }
@@ -430,4 +440,14 @@ export function haveSameSigns(n1: number, n2: number): boolean {
 
 export function haveDifferentSigns(n1: number, n2: number): boolean {
   return n1 < 0 !== n2 < 0;
+}
+
+export function detectRelativeSide(
+  from: THREE.Object3D,
+  to: THREE.Object3D
+): Side {
+  const right = getRight(from, Space.Local);
+  const viewVector = to.position.clone().sub(from.position).normalize();
+
+  return right.dot(viewVector) > 0 ? Side.Left : Side.Right;
 }

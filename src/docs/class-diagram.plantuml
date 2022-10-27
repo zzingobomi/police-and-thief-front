@@ -144,6 +144,16 @@ class VehicleSeat {
   +update()
 }
 
+class VehicleDoor {
+  vehicle: Vehicle
+	seat: VehicleSeat
+	doorObject: THREE.Object3D
+
+  +update()
+  +open()
+  +close()
+}
+
 class VehicleEntryInstance {
   character: Character
   targetSeat: VehicleSeat
@@ -181,6 +191,8 @@ StartWalkBackLeft <|-- StartWalkBase
 StartWalkBackRight <|-- StartWalkBase
 Walk <|-- CharacterStateBase
 
+OpenVehicleDoor <|-- CharacterStateBase
+
 Character <-- ICharacterState
 
 ''' Vehicle '''
@@ -190,6 +202,7 @@ Vehicle <|-- THREE.Object3D
 Vehicle <|-- IWorldEntity
 Vehicle <-- Wheel
 Vehicle <-- VehicleSeat
+VehicleSeat <-- VehicleDoor
 
 Car <|-- Vehicle
 Car <|-- IControllable

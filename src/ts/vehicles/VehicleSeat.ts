@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { IControllable } from "../interfaces/IControllable";
 import { SeatType } from "../enums/SeatType";
+import { VehicleDoor } from "./VehicleDoor";
 
 export class VehicleSeat {
   public vehicle: IControllable;
@@ -12,6 +13,7 @@ export class VehicleSeat {
 
   public type: SeatType;
   public entryPoints: THREE.Object3D[] = [];
+  public door: VehicleDoor;
 
   constructor(vehicle: IControllable, object: THREE.Object3D, gltf: any) {
     this.vehicle = vehicle;
@@ -22,7 +24,10 @@ export class VehicleSeat {
       object.userData.hasOwnProperty("data")
     ) {
       if (object.userData.hasOwnProperty("door_object")) {
-        //
+        this.door = new VehicleDoor(
+          this,
+          gltf.scene.getObjectByName(object.userData.door_object)
+        );
       }
 
       if (object.userData.hasOwnProperty("entry_points")) {
