@@ -318,16 +318,31 @@ export class World {
   private async createCar(initialData: THREE.Object3D) {
     const gltfLoader = new GLTFLoader();
     const model = await gltfLoader.loadAsync("./glb/car.glb");
+
+    model.scene.traverse((child) => {
+      if (child.hasOwnProperty("userData")) {
+        if (child.userData.data === "collision") {
+          if (child.userData.shape === "box") {
+            child.visible = false;
+          } else if (child.userData.shape === "sphere") {
+            child.visible = false;
+          }
+        }
+        if (child.userData.data === "navmesh") {
+          child.visible = false;
+        }
+      }
+    });
+
     const car = new Car(model);
 
-    // TODO: 왜 안보이지..?
     const worldPos = new THREE.Vector3();
     const worldQuat = new THREE.Quaternion();
     initialData.getWorldPosition(worldPos);
     initialData.getWorldQuaternion(worldQuat);
 
-    car.position.set(worldPos.x, worldPos.y, worldPos.z);
-    car.quaternion.set(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w);
+    car.setPosition(worldPos.x, worldPos.y + 2, worldPos.z);
+    car.setQuaternion(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w);
     car.scale.set(
       initialData.scale.x,
       initialData.scale.y,
@@ -335,6 +350,56 @@ export class World {
     );
 
     this.add(car);
+
+    // josn 뽑아내기..
+    // const carInfos: any[] = [];
+    // model.scene.traverse((child) => {
+    //   if (child.hasOwnProperty("userData")) {
+    //     if (child.userData.data === "seat") {
+    //       //
+    //     }
+    //     if (child.userData.data === "camera") {
+    //       //
+    //     }
+    //     if (child.userData.data === "wheel") {
+    //       //
+    //     }
+    //     if (child.userData.data === "collision") {
+    //       if (child.userData.shape === "box") {
+    //         const info = {
+    //           name: child.name,
+    //           type: "box",
+    //           position: [child.position.x, child.position.y, child.position.z],
+    //           quaternion: [
+    //             child.quaternion.x,
+    //             child.quaternion.y,
+    //             child.quaternion.z,
+    //             child.quaternion.w,
+    //           ],
+    //           scale: [child.scale.x, child.scale.y, child.scale.z],
+    //         };
+    //         carInfos.push(info);
+    //       } else if (child.userData.shape === "sphere") {
+    //         const info = {
+    //           name: child.name,
+    //           type: "sphere",
+    //           position: [child.position.x, child.position.y, child.position.z],
+    //           quaternion: [
+    //             child.quaternion.x,
+    //             child.quaternion.y,
+    //             child.quaternion.z,
+    //             child.quaternion.w,
+    //           ],
+    //           scale: [child.scale.x, child.scale.y, child.scale.z],
+    //         };
+    //         carInfos.push(info);
+    //       }
+    //     }
+    //     if (child.userData.data === "navmesh") {
+    //       child.visible = false;
+    //     }
+    //   }
+    // });
   }
 
   // private initDebugRenderer() {

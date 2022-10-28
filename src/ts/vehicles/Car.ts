@@ -1,3 +1,4 @@
+import { GLTF } from "three-stdlib";
 import { KeyBinding } from "../core/KeyBinding";
 import { EntityType } from "../enums/EntityType";
 import { IControllable } from "../interfaces/IControllable";
@@ -8,7 +9,7 @@ export class Car extends Vehicle implements IControllable {
 
   actions: { [action: string]: KeyBinding };
 
-  constructor(gltf: any) {
+  constructor(gltf: GLTF) {
     super(gltf);
   }
 }

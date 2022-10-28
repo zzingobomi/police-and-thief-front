@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import * as CANNON from "cannon-es";
 import * as _ from "lodash";
 import { IWorldEntity } from "../interfaces/IWorldEntity";
 import { EntityType } from "../enums/EntityType";
 import { World } from "../world/World";
 import { Character } from "../characters/Character";
+import { GLTF } from "three-stdlib";
 
 export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
   public updateOrder: number = 2;
@@ -15,17 +15,26 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
 
   private modelContainer: THREE.Group;
 
-  constructor(gltf: any) {
+  public serverPosition: THREE.Vector3;
+  public serverQuaternion: THREE.Quaternion;
+  public serverScale: THREE.Vector3;
+
+  constructor(gltf: GLTF) {
     super();
 
     this.modelContainer = new THREE.Group();
     this.add(this.modelContainer);
     this.modelContainer.add(gltf.scene);
+
+    this.serverPosition = new THREE.Vector3();
+    this.serverQuaternion = new THREE.Quaternion();
+    this.serverScale = new THREE.Vector3();
   }
 
   addToWorld(world: World): void {
     this.world = world;
     world.vehicles.push(this);
+    world.scene.add(this);
   }
   removeFromWorld(world: World): void {
     if (!_.includes(world.vehicles, this)) {
@@ -37,6 +46,42 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
       _.pull(world.vehicles, this);
     }
   }
+
+  public setPosition(x: number, y: number, z: number) {
+    this.position.x = x;
+    this.position.y = y;
+    this.position.z = z;
+  }
+  public setServerPosition(x: number, y: number, z: number) {
+    this.serverPosition.x = x;
+    this.serverPosition.y = y;
+    this.serverPosition.z = z;
+  }
+
+  public setQuaternion(x: number, y: number, z: number, w: number) {
+    this.quaternion.x = x;
+    this.quaternion.y = y;
+    this.quaternion.z = z;
+    this.quaternion.w = w;
+  }
+  public setServerQuaternion(x: number, y: number, z: number, w: number) {
+    this.serverQuaternion.x = x;
+    this.serverQuaternion.y = y;
+    this.serverQuaternion.z = z;
+    this.serverQuaternion.w = w;
+  }
+
+  public setScale(x: number, y: number, z: number) {
+    this.scale.x = x;
+    this.scale.y = y;
+    this.scale.z = z;
+  }
+  public setServerScale(x: number, y: number, z: number) {
+    this.serverScale.x = x;
+    this.serverScale.y = y;
+    this.serverScale.z = z;
+  }
+
   update(delta: number): void {}
 
   handleKeyboardEvent(
