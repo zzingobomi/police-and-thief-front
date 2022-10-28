@@ -4,4 +4,9 @@ import { IInputReceiver } from "./IInputReceiver";
 
 export interface IControllable extends IInputReceiver {
   entityType: EntityType;
+  controllingCharacter: Character;
+
+  allowSleep(value: boolean): void;
+  onInputChange(): void;
+  noDirectionPressed(): boolean;
 }

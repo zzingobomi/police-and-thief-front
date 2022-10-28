@@ -254,4 +254,18 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
   inputReceiverUpdate(delta: number): void {
     //
   }
+
+  public onInputChange() {}
+
+  public allowSleep(value: boolean) {
+    this.collision.allowSleep = value;
+
+    if (value === false) {
+      this.collision.wakeUp();
+    }
+  }
+
+  public noDirectionPressed(): boolean {
+    return true;
+  }
 }

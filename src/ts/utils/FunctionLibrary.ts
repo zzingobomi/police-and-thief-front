@@ -26,6 +26,8 @@ import { Side } from "../enums/Side";
 import { OpenVehicleDoor } from "../characters/character_states/vehicles/OpenVehicleDoor";
 import { VehicleSeat } from "../vehicles/VehicleSeat";
 import { EnteringVehicle } from "../characters/character_states/vehicles/EnteringVehicle";
+import { Driving } from "../characters/character_states/vehicles/Driving";
+import { Sitting } from "../characters/character_states/vehicles/Sitting";
 
 interface Face3 {
   a: number;
@@ -366,6 +368,10 @@ export function characterStateFactory(
         option[0] as VehicleSeat,
         option[1] as THREE.Object3D
       );
+    case StateType.Driving:
+      return new Driving(character, option[0] as VehicleSeat);
+    case StateType.Sitting:
+      return new Sitting(character, option[0] as VehicleSeat);
     default:
       return new Idle(character);
   }

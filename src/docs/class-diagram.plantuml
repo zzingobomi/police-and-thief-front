@@ -74,6 +74,8 @@ class Character {
 
   +findVehicleToEnter()
   +enterVehicle()
+  +startControllingVehicle()
+  +transferControls()
 }
 
 '''
@@ -104,12 +106,19 @@ class CharacterStateBase {
 ''' Vehicle
 '''
 interface IControllable {
+  entityType: EntityType
+  controllingCharacter: Character
 
+  +allowSleep()
+  +onInputChange()
+  +noDirectionPressed()
 }
 
 class Car {
   entityType: EntityType
   actions: { [action: string]: KeyBinding }
+
+  +noDirectionPressed()
 }
 
 abstract class Vehicle {
@@ -124,6 +133,9 @@ abstract class Vehicle {
 
   +handleKeyboardEvent()
   +handleMouseMove()
+
+  +onInputChange()
+  +noDirectionPressed()
 }
 
 class Wheel {
@@ -188,6 +200,14 @@ class EnteringVehicle {
   +update()  
 }
 
+class Driving {
+  seat: VehicleSeat
+}
+
+class Sitting {
+  seat: VehicleSeat
+}
+
 
 IWorldEntity <|-- IUpdatable
 Character <|-- THREE.Object3D
@@ -218,6 +238,8 @@ Walk <|-- CharacterStateBase
 
 OpenVehicleDoor <|-- CharacterStateBase
 EnteringVehicle <|-- CharacterStateBase
+Driving <|-- CharacterStateBase
+Sitting <|-- CharacterStateBase
 
 Character <-- ICharacterState
 
@@ -229,6 +251,7 @@ Vehicle <|-- IWorldEntity
 Vehicle <-- Wheel
 Vehicle <-- VehicleSeat
 VehicleSeat <-- VehicleDoor
+VehicleSeat <-- IControllable
 
 Car <|-- Vehicle
 Car <|-- IControllable

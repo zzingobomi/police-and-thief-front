@@ -22,6 +22,7 @@ import { SeatType } from "../enums/SeatType";
 import { Object3D } from "three";
 import { OpenVehicleDoor } from "./character_states/vehicles/OpenVehicleDoor";
 import { EnteringVehicle } from "./character_states/vehicles/EnteringVehicle";
+import { StateType } from "../enums/StateType";
 
 export class Character extends THREE.Object3D implements IWorldEntity {
   public updateOrder = 1;
@@ -727,9 +728,23 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     this.resetControls();
 
     if (seat.door?.rotation < 0.5) {
-      this.setState(new OpenVehicleDoor(this, seat, entryPoint));
+      this.setState(
+        Utils.characterStateFactory(
+          StateType.OpenVehicleDoor,
+          this,
+          seat,
+          entryPoint
+        )
+      );
     } else {
-      this.setState(new EnteringVehicle(this, seat, entryPoint));
+      this.setState(
+        Utils.characterStateFactory(
+          StateType.EnteringVehicle,
+          this,
+          seat,
+          entryPoint
+        )
+      );
     }
   }
 
@@ -742,6 +757,19 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     if (this.occupyingSeat !== null) {
       this.occupyingSeat.occupiedBy = null;
       this.occupyingSeat = null;
+    }
+  }
+
+  public startControllingVehicle(vehicle: IControllable, seat: VehicleSeat) {
+    if (this.controlledObject !== vehicle) {
+      //this.transferControls(vehicle);
+      this.resetControls();
+
+      this.controlledObject = vehicle;
+      this.controlledObject.allowSleep(false);
+      vehicle.inputReceiverInit();
+
+      vehicle.controllingCharacter = this;
     }
   }
 }
