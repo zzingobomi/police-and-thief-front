@@ -102,12 +102,17 @@ export class World {
 
   private initSignal() {
     PubSub.subscribe(SignalType.CREATE_PLAYER, (msg, data) => {
-      const { player, sessionId } = data;
+      const { playerUpdator, sessionId } = data;
       if (ColyseusStore.getInstance().GetRoom()?.sessionId === sessionId) {
-        this.createMyCharacter(player, sessionId);
+        this.createMyCharacter(playerUpdator, sessionId);
       } else {
-        this.createRemoteCharacter(player, sessionId);
+        this.createRemoteCharacter(playerUpdator, sessionId);
       }
+    });
+
+    PubSub.subscribe(SignalType.CREATE_CAR, (msg, data) => {
+      const { carUpdator, networkId } = data;
+      this.createCar(carUpdator, networkId);
     });
   }
 
@@ -148,7 +153,7 @@ export class World {
                 ) {
                   if (scenarioData.userData.data === "spawn") {
                     if (scenarioData.userData.type === "car") {
-                      this.createCar(scenarioData);
+                      //this.createCar(scenarioData);
                     }
                   }
                 }
@@ -315,92 +320,42 @@ export class World {
     this.scene.add(directionalLight);
   }
 
-  private async createCar(initialData: THREE.Object3D) {
-    const gltfLoader = new GLTFLoader();
-    const model = await gltfLoader.loadAsync("./glb/car.glb");
+  // private async createCar(initialData: THREE.Object3D) {
+  //   const gltfLoader = new GLTFLoader();
+  //   const model = await gltfLoader.loadAsync("./glb/car.glb");
 
-    model.scene.traverse((child) => {
-      if (child.hasOwnProperty("userData")) {
-        if (child.userData.data === "collision") {
-          if (child.userData.shape === "box") {
-            child.visible = false;
-          } else if (child.userData.shape === "sphere") {
-            child.visible = false;
-          }
-        }
-        if (child.userData.data === "navmesh") {
-          child.visible = false;
-        }
-      }
-    });
+  //   model.scene.traverse((child) => {
+  //     if (child.hasOwnProperty("userData")) {
+  //       if (child.userData.data === "collision") {
+  //         if (child.userData.shape === "box") {
+  //           child.visible = false;
+  //         } else if (child.userData.shape === "sphere") {
+  //           child.visible = false;
+  //         }
+  //       }
+  //       if (child.userData.data === "navmesh") {
+  //         child.visible = false;
+  //       }
+  //     }
+  //   });
 
-    const car = new Car(model);
+  //   const car = new Car(model);
 
-    const worldPos = new THREE.Vector3();
-    const worldQuat = new THREE.Quaternion();
-    initialData.getWorldPosition(worldPos);
-    initialData.getWorldQuaternion(worldQuat);
+  //   const worldPos = new THREE.Vector3();
+  //   const worldQuat = new THREE.Quaternion();
+  //   initialData.getWorldPosition(worldPos);
+  //   initialData.getWorldQuaternion(worldQuat);
 
-    car.setPosition(worldPos.x, worldPos.y + 2, worldPos.z);
-    car.setQuaternion(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w);
-    car.scale.set(
-      initialData.scale.x,
-      initialData.scale.y,
-      initialData.scale.z
-    );
+  //   car.setPosition(worldPos.x, worldPos.y + 2, worldPos.z);
+  //   car.setQuaternion(worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w);
+  //   car.scale.set(
+  //     initialData.scale.x,
+  //     initialData.scale.y,
+  //     initialData.scale.z
+  //   );
 
-    this.add(car);
-
-    // josn 뽑아내기..
-    // const carInfos: any[] = [];
-    // model.scene.traverse((child) => {
-    //   if (child.hasOwnProperty("userData")) {
-    //     if (child.userData.data === "seat") {
-    //       //
-    //     }
-    //     if (child.userData.data === "camera") {
-    //       //
-    //     }
-    //     if (child.userData.data === "wheel") {
-    //       //
-    //     }
-    //     if (child.userData.data === "collision") {
-    //       if (child.userData.shape === "box") {
-    //         const info = {
-    //           name: child.name,
-    //           type: "box",
-    //           position: [child.position.x, child.position.y, child.position.z],
-    //           quaternion: [
-    //             child.quaternion.x,
-    //             child.quaternion.y,
-    //             child.quaternion.z,
-    //             child.quaternion.w,
-    //           ],
-    //           scale: [child.scale.x, child.scale.y, child.scale.z],
-    //         };
-    //         carInfos.push(info);
-    //       } else if (child.userData.shape === "sphere") {
-    //         const info = {
-    //           name: child.name,
-    //           type: "sphere",
-    //           position: [child.position.x, child.position.y, child.position.z],
-    //           quaternion: [
-    //             child.quaternion.x,
-    //             child.quaternion.y,
-    //             child.quaternion.z,
-    //             child.quaternion.w,
-    //           ],
-    //           scale: [child.scale.x, child.scale.y, child.scale.z],
-    //         };
-    //         carInfos.push(info);
-    //       }
-    //     }
-    //     if (child.userData.data === "navmesh") {
-    //       child.visible = false;
-    //     }
-    //   }
-    // });
-  }
+  //   this.add(car);
+  // }
 
   // private initDebugRenderer() {
   //   this.cannonDebugRenderer = new CannonDebugRenderer(
@@ -477,50 +432,103 @@ export class World {
     _.pull(this.updatables, registree);
   }
 
-  public async createMyCharacter(player: any, sessionId: string) {
+  public async createMyCharacter(playerUpdator: any, sessionId: string) {
     const gltfLoader = new GLTFLoader();
     const model = await gltfLoader.loadAsync("./glb/boxman.glb");
     const myPlayer = new Character(model);
 
     myPlayer.setPosition(
-      player.position.x,
-      player.position.y,
-      player.position.z
+      playerUpdator.position.x,
+      playerUpdator.position.y,
+      playerUpdator.position.z
     );
     myPlayer.setQuaternion(
-      player.quaternion.x,
-      player.quaternion.y,
-      player.quaternion.z,
-      player.quaternion.w
+      playerUpdator.quaternion.x,
+      playerUpdator.quaternion.y,
+      playerUpdator.quaternion.z,
+      playerUpdator.quaternion.w
     );
-    myPlayer.setScale(player.scale.x, player.scale.y, player.scale.z);
+    myPlayer.setScale(
+      playerUpdator.scale.x,
+      playerUpdator.scale.y,
+      playerUpdator.scale.z
+    );
 
-    myPlayer.setOnChange(player);
+    myPlayer.setOnChange(playerUpdator);
 
     this.add(myPlayer);
     myPlayer.takeControl();
   }
 
-  public async createRemoteCharacter(player: any, sessionId: string) {
+  public async createRemoteCharacter(playerUpdator: any, sessionId: string) {
     const gltfLoader = new GLTFLoader();
     const model = await gltfLoader.loadAsync("./glb/boxman.glb");
     const remotePlayer = new Character(model);
 
     remotePlayer.setPosition(
-      player.position.x,
-      player.position.y,
-      player.position.z
+      playerUpdator.position.x,
+      playerUpdator.position.y,
+      playerUpdator.position.z
     );
     remotePlayer.setQuaternion(
-      player.quaternion.x,
-      player.quaternion.y,
-      player.quaternion.z,
-      player.quaternion.w
+      playerUpdator.quaternion.x,
+      playerUpdator.quaternion.y,
+      playerUpdator.quaternion.z,
+      playerUpdator.quaternion.w
     );
-    remotePlayer.setScale(player.scale.x, player.scale.y, player.scale.z);
+    remotePlayer.setScale(
+      playerUpdator.scale.x,
+      playerUpdator.scale.y,
+      playerUpdator.scale.z
+    );
 
-    remotePlayer.setOnChange(player);
+    remotePlayer.setOnChange(playerUpdator);
 
     this.add(remotePlayer);
+  }
+
+  private async createCar(carUpdator: any, networkId: string) {
+    const gltfLoader = new GLTFLoader();
+    const model = await gltfLoader.loadAsync("./glb/car.glb");
+
+    model.scene.traverse((child) => {
+      if (child.hasOwnProperty("userData")) {
+        if (child.userData.data === "collision") {
+          if (child.userData.shape === "box") {
+            child.visible = false;
+          } else if (child.userData.shape === "sphere") {
+            child.visible = false;
+          }
+        }
+        if (child.userData.data === "navmesh") {
+          child.visible = false;
+        }
+      }
+    });
+
+    const car = new Car(model);
+
+    console.log(
+      carUpdator.position.x,
+      carUpdator.position.y,
+      carUpdator.position.z
+    );
+
+    car.setPosition(
+      carUpdator.position.x,
+      carUpdator.position.y,
+      carUpdator.position.z
+    );
+    car.setQuaternion(
+      carUpdator.quaternion.x,
+      carUpdator.quaternion.y,
+      carUpdator.quaternion.z,
+      carUpdator.quaternion.w
+    );
+    car.setScale(carUpdator.scale.x, carUpdator.scale.y, carUpdator.scale.z);
+
+    car.setOnChange(carUpdator);
+
+    this.add(car);
   }
 }

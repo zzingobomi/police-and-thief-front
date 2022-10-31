@@ -194,30 +194,36 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     return 0;
   }
 
-  public setOnChange(player: any) {
-    player.position.onChange = (changes: any) => {
+  public setOnChange(playerUpdator: any) {
+    playerUpdator.position.onChange = (changes: any) => {
       this.setServerPosition(
-        player.position.x,
-        player.position.y,
-        player.position.z
+        playerUpdator.position.x,
+        playerUpdator.position.y,
+        playerUpdator.position.z
       );
     };
-    player.quaternion.onChange = (changes: any) => {
+    playerUpdator.quaternion.onChange = (changes: any) => {
       this.setServerQuaternion(
-        player.quaternion.x,
-        player.quaternion.y,
-        player.quaternion.z,
-        player.quaternion.w
+        playerUpdator.quaternion.x,
+        playerUpdator.quaternion.y,
+        playerUpdator.quaternion.z,
+        playerUpdator.quaternion.w
       );
     };
-    player.scale.onChange = (changes: any) => {
-      this.setServerScale(player.scale.x, player.scale.y, player.scale.z);
+    playerUpdator.scale.onChange = (changes: any) => {
+      this.setServerScale(
+        playerUpdator.scale.x,
+        playerUpdator.scale.y,
+        playerUpdator.scale.z
+      );
     };
 
-    player.onChange = (changes: any) => {
+    playerUpdator.onChange = (changes: any) => {
       changes.forEach((change: any) => {
         if (change.field === "stateName") {
-          this.setState(Utils.characterStateFactory(player.stateName, this));
+          this.setState(
+            Utils.characterStateFactory(playerUpdator.stateName, this)
+          );
         }
       });
     };

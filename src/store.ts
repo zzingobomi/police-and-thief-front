@@ -19,8 +19,11 @@ export class ColyseusStore {
 
   public SetRoom(room: Colyseus.Room) {
     this.room = room;
-    this.room.state.players.onAdd = (player: any, sessionId: any) => {
-      PubSub.publish(SignalType.CREATE_PLAYER, { player, sessionId });
+    this.room.state.players.onAdd = (playerUpdator: any, sessionId: string) => {
+      PubSub.publish(SignalType.CREATE_PLAYER, { playerUpdator, sessionId });
+    };
+    this.room.state.cars.onAdd = (carUpdator: any, networkId: string) => {
+      PubSub.publish(SignalType.CREATE_CAR, { carUpdator, networkId });
     };
   }
   public GetRoom() {

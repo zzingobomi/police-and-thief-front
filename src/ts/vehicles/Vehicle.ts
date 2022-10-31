@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import * as _ from "lodash";
+import * as Utils from "../utils/FunctionLibrary";
 import { IWorldEntity } from "../interfaces/IWorldEntity";
 import { EntityType } from "../enums/EntityType";
 import { World } from "../world/World";
@@ -82,7 +83,39 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity {
     this.serverScale.z = z;
   }
 
-  update(delta: number): void {}
+  public setOnChange(vehicleUpdator: any) {
+    vehicleUpdator.position.onChange = (changes: any) => {
+      this.setServerPosition(
+        vehicleUpdator.position.x,
+        vehicleUpdator.position.y,
+        vehicleUpdator.position.z
+      );
+    };
+    vehicleUpdator.quaternion.onChange = (changes: any) => {
+      this.setServerQuaternion(
+        vehicleUpdator.quaternion.x,
+        vehicleUpdator.quaternion.y,
+        vehicleUpdator.quaternion.z,
+        vehicleUpdator.quaternion.w
+      );
+    };
+    vehicleUpdator.scale.onChange = (changes: any) => {
+      this.setServerScale(
+        vehicleUpdator.scale.x,
+        vehicleUpdator.scale.y,
+        vehicleUpdator.scale.z
+      );
+    };
+  }
+
+  update(delta: number): void {
+    this.position.copy(
+      Utils.lerpVector(this.position, this.serverPosition, 0.1)
+    );
+    this.quaternion.copy(
+      Utils.lerpQuaternion(this.quaternion, this.serverQuaternion, 0.1)
+    );
+  }
 
   handleKeyboardEvent(
     event: KeyboardEvent,
