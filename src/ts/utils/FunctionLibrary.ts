@@ -22,6 +22,8 @@ import { DropRunning } from "../characters/character_states/DropRunning";
 import { JumpIdle } from "../characters/character_states/JumpIdle";
 import { JumpRunning } from "../characters/character_states/JumpRunning";
 import { Sprint } from "../characters/character_states/Sprint";
+import { OpenVehicleDoor } from "../characters/character_states/vehicles/OpenVehicleDoor";
+import { EnteringVehicle } from "../characters/character_states/vehicles/EnteringVehicle";
 
 interface Face3 {
   a: number;
@@ -311,10 +313,11 @@ export function offsetCenterOfMass(
 }
 
 export function characterStateFactory(
-  typeName: StateType,
-  character: Character
+  stateName: StateType,
+  character: Character,
+  animationName: string = ""
 ) {
-  switch (typeName) {
+  switch (stateName) {
     case StateType.Idle:
       return new Idle(character);
     case StateType.IdleRotateLeft:
@@ -349,6 +352,10 @@ export function characterStateFactory(
       return new JumpRunning(character);
     case StateType.Sprint:
       return new Sprint(character);
+    case StateType.OpenVehicleDoor:
+      return new OpenVehicleDoor(character, animationName);
+    case StateType.EnteringVehicle:
+      return new EnteringVehicle(character, animationName);
     default:
       return new Idle(character);
   }

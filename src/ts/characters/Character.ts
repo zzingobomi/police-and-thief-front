@@ -218,14 +218,14 @@ export class Character extends THREE.Object3D implements IWorldEntity {
       );
     };
 
-    playerUpdator.onChange = (changes: any) => {
-      changes.forEach((change: any) => {
-        if (change.field === "stateName") {
-          this.setState(
-            Utils.characterStateFactory(playerUpdator.stateName, this)
-          );
-        }
-      });
+    playerUpdator.state.onChange = (changes: any) => {
+      this.setState(
+        Utils.characterStateFactory(
+          playerUpdator.state.stateName,
+          this,
+          playerUpdator.state.animationName
+        )
+      );
     };
   }
 }
