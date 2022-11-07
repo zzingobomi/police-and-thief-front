@@ -192,9 +192,7 @@ export class World {
                 ) {
                   if (scenarioData.userData.data === "spawn") {
                     if (scenarioData.userData.type === "car") {
-                      if (scenarioData.userData.name === "Spawn.025") {
-                        this.createCar(scenarioData);
-                      }
+                      this.createCar(scenarioData);
                     }
                   }
                 }
