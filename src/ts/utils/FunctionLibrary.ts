@@ -24,6 +24,8 @@ import { JumpRunning } from "../characters/character_states/JumpRunning";
 import { Sprint } from "../characters/character_states/Sprint";
 import { OpenVehicleDoor } from "../characters/character_states/vehicles/OpenVehicleDoor";
 import { EnteringVehicle } from "../characters/character_states/vehicles/EnteringVehicle";
+import { Driving } from "../characters/character_states/vehicles/Driving";
+import { Sitting } from "../characters/character_states/vehicles/Sitting";
 
 interface Face3 {
   a: number;
@@ -356,6 +358,10 @@ export function characterStateFactory(
       return new OpenVehicleDoor(character, animationName);
     case StateType.EnteringVehicle:
       return new EnteringVehicle(character, animationName);
+    case StateType.Driving:
+      return new Driving(character);
+    case StateType.Sitting:
+      return new Sitting(character);
     default:
       return new Idle(character);
   }
