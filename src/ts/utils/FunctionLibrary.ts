@@ -28,6 +28,10 @@ import { VehicleSeat } from "../vehicles/VehicleSeat";
 import { EnteringVehicle } from "../characters/character_states/vehicles/EnteringVehicle";
 import { Driving } from "../characters/character_states/vehicles/Driving";
 import { Sitting } from "../characters/character_states/vehicles/Sitting";
+import { CloseVehicleDoorInside } from "../characters/character_states/vehicles/CloseVehicleDoorInside";
+import { CloseVehicleDoorOutside } from "../characters/character_states/vehicles/CloseVehicleDoorOutside";
+import { ExitingVehicle } from "../characters/character_states/vehicles/ExitingVehicle";
+import { SwitchingSeats } from "../characters/character_states/vehicles/SwitchingSeats";
 
 interface Face3 {
   a: number;
@@ -356,22 +360,34 @@ export function characterStateFactory(
       return new JumpRunning(character);
     case StateType.Sprint:
       return new Sprint(character);
-    case StateType.OpenVehicleDoor:
-      return new OpenVehicleDoor(
-        character,
-        option[0] as VehicleSeat,
-        option[1] as THREE.Object3D
-      );
+    case StateType.CloseVehicleDoorInside:
+      return new CloseVehicleDoorInside(character, option[0] as VehicleSeat);
+    case StateType.CloseVehicleDoorOutside:
+      return new CloseVehicleDoorOutside(character, option[0] as VehicleSeat);
+    case StateType.Driving:
+      return new Driving(character, option[0] as VehicleSeat);
     case StateType.EnteringVehicle:
       return new EnteringVehicle(
         character,
         option[0] as VehicleSeat,
         option[1] as THREE.Object3D
       );
-    case StateType.Driving:
-      return new Driving(character, option[0] as VehicleSeat);
+    case StateType.ExitingVehicle:
+      return new ExitingVehicle(character, option[0] as VehicleSeat);
+    case StateType.OpenVehicleDoor:
+      return new OpenVehicleDoor(
+        character,
+        option[0] as VehicleSeat,
+        option[1] as THREE.Object3D
+      );
     case StateType.Sitting:
       return new Sitting(character, option[0] as VehicleSeat);
+    case StateType.SwitchingSeats:
+      return new SwitchingSeats(
+        character,
+        option[0] as VehicleSeat,
+        option[1] as VehicleSeat
+      );
     default:
       return new Idle(character);
   }

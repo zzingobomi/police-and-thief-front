@@ -74,6 +74,7 @@ class Character {
 
   +findVehicleToEnter()
   +enterVehicle()
+  +exitVehicle()
   +startControllingVehicle()
   +transferControls()
 }
@@ -175,16 +176,18 @@ class VehicleEntryInstance {
   +update()
 }
 
-class OpenVehicleDoor {
+class CloseVehicleDoorInside {
   seat: VehicleSeat
-  entryPoint: THREE.Object3D
+  hasClosedDoor: boolean
+}
 
-  startPosition: THREE.Vector3
-  endPosition: THREE.Vector3
-  startRotation: THREE.Quaternion
-  endRotation: THREE.Quaternion
+class CloseVehicleDoorOutside {
+  seat: VehicleSeat
+  hasClosedDoor: boolean
+}
 
-  +update()
+class Driving {
+  seat: VehicleSeat
 }
 
 class EnteringVehicle {
@@ -200,13 +203,49 @@ class EnteringVehicle {
   +update()  
 }
 
-class Driving {
+abstract class ExitingStateBase {
+  vehicle: IControllable
   seat: VehicleSeat
+
+  startPosition: THREE.Vector3
+  endPosition: THREE.Vector3
+  startRotation: THREE.Quaternion
+  endRotation: THREE.Quaternion
+
+  +detachCharacterFromVehicle()
+  +updateEndRotation()
+}
+
+class ExitingVehicle {
+}
+
+class OpenVehicleDoor {
+  seat: VehicleSeat
+  entryPoint: THREE.Object3D
+
+  startPosition: THREE.Vector3
+  endPosition: THREE.Vector3
+  startRotation: THREE.Quaternion
+  endRotation: THREE.Quaternion
+
+  +update()
 }
 
 class Sitting {
   seat: VehicleSeat
+
+  +onInputChange()
 }
+
+class SwitchingSeats {
+  toSeat: VehicleSeat
+
+  startPosition: THREE.Vector3
+  endPosition: THREE.Vector3
+  startRotation: THREE.Quaternion
+  endRotation: THREE.Quaternion
+}
+
 
 
 IWorldEntity <|-- IUpdatable
@@ -236,10 +275,15 @@ StartWalkBackLeft <|-- StartWalkBase
 StartWalkBackRight <|-- StartWalkBase
 Walk <|-- CharacterStateBase
 
-OpenVehicleDoor <|-- CharacterStateBase
-EnteringVehicle <|-- CharacterStateBase
+CloseVehicleDoorInside <|-- CharacterStateBase
+CloseVehicleDoorOutside <|-- CharacterStateBase
 Driving <|-- CharacterStateBase
+EnteringVehicle <|-- CharacterStateBase
+ExitingStateBase <|-- CharacterStateBase
+OpenVehicleDoor <|-- CharacterStateBase
+ExitingVehicle <|-- ExitingStateBase
 Sitting <|-- CharacterStateBase
+SwitchingSeats <|-- CharacterStateBase
 
 Character <-- ICharacterState
 

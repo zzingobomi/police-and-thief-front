@@ -21,6 +21,7 @@ export class EnteringVehicle extends CharacterStateBase {
   private startRotation: THREE.Quaternion = new THREE.Quaternion();
   private endRotation: THREE.Quaternion = new THREE.Quaternion();
 
+  // 다른곳에서는 easeInOutSineFactor 로 구했던데..?
   private factorSimulator: SpringSimulator;
 
   constructor(

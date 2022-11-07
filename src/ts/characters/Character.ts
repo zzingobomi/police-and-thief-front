@@ -724,6 +724,16 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     }
   }
 
+  public stopControllingVehicle() {
+    // if (this.controlledObject?.controllingCharacter === this) {
+    //   this.controlledObject.allowSleep(true);
+    // 	this.controlledObject.controllingCharacter = undefined;
+    // 	this.controlledObject.resetControls();
+    // 	this.controlledObject = undefined;
+    // 	this.inputReceiverInit();
+    // }
+  }
+
   public enterVehicle(seat: VehicleSeat, entryPoint: THREE.Object3D) {
     this.resetControls();
 
@@ -745,6 +755,20 @@ export class Character extends THREE.Object3D implements IWorldEntity {
           entryPoint
         )
       );
+    }
+  }
+
+  public exitVehicle() {
+    if (this.occupyingSeat !== null) {
+      this.setState(
+        Utils.characterStateFactory(
+          StateType.ExitingVehicle,
+          this,
+          this.occupyingSeat
+        )
+      );
+
+      this.stopControllingVehicle();
     }
   }
 
