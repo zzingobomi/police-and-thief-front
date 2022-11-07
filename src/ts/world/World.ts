@@ -442,13 +442,29 @@ export class World {
       playerUpdator.position.y,
       playerUpdator.position.z
     );
+    myPlayer.setServerPosition(
+      playerUpdator.position.x,
+      playerUpdator.position.y,
+      playerUpdator.position.z
+    );
     myPlayer.setQuaternion(
       playerUpdator.quaternion.x,
       playerUpdator.quaternion.y,
       playerUpdator.quaternion.z,
       playerUpdator.quaternion.w
     );
+    myPlayer.setServerQuaternion(
+      playerUpdator.quaternion.x,
+      playerUpdator.quaternion.y,
+      playerUpdator.quaternion.z,
+      playerUpdator.quaternion.w
+    );
     myPlayer.setScale(
+      playerUpdator.scale.x,
+      playerUpdator.scale.y,
+      playerUpdator.scale.z
+    );
+    myPlayer.setServerScale(
       playerUpdator.scale.x,
       playerUpdator.scale.y,
       playerUpdator.scale.z
@@ -470,13 +486,29 @@ export class World {
       playerUpdator.position.y,
       playerUpdator.position.z
     );
+    remotePlayer.setServerPosition(
+      playerUpdator.position.x,
+      playerUpdator.position.y,
+      playerUpdator.position.z
+    );
     remotePlayer.setQuaternion(
       playerUpdator.quaternion.x,
       playerUpdator.quaternion.y,
       playerUpdator.quaternion.z,
       playerUpdator.quaternion.w
     );
+    remotePlayer.setServerQuaternion(
+      playerUpdator.quaternion.x,
+      playerUpdator.quaternion.y,
+      playerUpdator.quaternion.z,
+      playerUpdator.quaternion.w
+    );
     remotePlayer.setScale(
+      playerUpdator.scale.x,
+      playerUpdator.scale.y,
+      playerUpdator.scale.z
+    );
+    remotePlayer.setServerScale(
       playerUpdator.scale.x,
       playerUpdator.scale.y,
       playerUpdator.scale.z
@@ -508,13 +540,12 @@ export class World {
 
     const car = new Car(model);
 
-    console.log(
+    car.setPosition(
       carUpdator.position.x,
       carUpdator.position.y,
       carUpdator.position.z
     );
-
-    car.setPosition(
+    car.setServerPosition(
       carUpdator.position.x,
       carUpdator.position.y,
       carUpdator.position.z
@@ -525,7 +556,18 @@ export class World {
       carUpdator.quaternion.z,
       carUpdator.quaternion.w
     );
+    car.setServerQuaternion(
+      carUpdator.quaternion.x,
+      carUpdator.quaternion.y,
+      carUpdator.quaternion.z,
+      carUpdator.quaternion.w
+    );
     car.setScale(carUpdator.scale.x, carUpdator.scale.y, carUpdator.scale.z);
+    car.setServerScale(
+      carUpdator.scale.x,
+      carUpdator.scale.y,
+      carUpdator.scale.z
+    );
 
     car.setOnChange(carUpdator);
 
