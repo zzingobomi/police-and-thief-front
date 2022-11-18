@@ -70,7 +70,7 @@ export class Character extends THREE.Object3D implements IWorldEntity {
   public charState: ICharacterState;
 
   // Vehicles
-  public controlledObject: IControllable;
+  public controlledObject: IControllable | null = null;
   public occupyingSeat: VehicleSeat | null = null;
   public vehicleEntryInstance: VehicleEntryInstance | null = null;
 
@@ -643,6 +643,11 @@ export class Character extends THREE.Object3D implements IWorldEntity {
     if (instantly) {
       this.orientation.copy(lookVector);
     }
+  }
+
+  public resetOrientation(): void {
+    const forward = Utils.getForward(this);
+    this.setOrientation(forward, true);
   }
 
   public setPhysicsEnabled(value: boolean) {

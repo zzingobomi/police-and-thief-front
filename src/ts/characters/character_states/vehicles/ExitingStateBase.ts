@@ -1,8 +1,10 @@
 import { IControllable } from "../../../interfaces/IControllable";
 import { VehicleSeat } from "../../../vehicles/VehicleSeat";
 import { CharacterStateBase } from "../CharacterStateBase";
+import * as Utils from "../../../utils/FunctionLibrary";
 import * as THREE from "three";
 import { Character } from "../../Character";
+import { Vehicle } from "../../../vehicles/Vehicle";
 
 export abstract class ExitingStateBase extends CharacterStateBase {
   protected vehicle: IControllable;
@@ -16,5 +18,48 @@ export abstract class ExitingStateBase extends CharacterStateBase {
 
   constructor(character: Character, seat: VehicleSeat, name: string) {
     super(character, name);
+
+    this.canFindVehiclesToEnter = false;
+    this.seat = seat;
+    this.vehicle = seat.vehicle;
+
+    this.seat.door?.open();
+
+    this.startPosition.copy(this.character.position);
+    this.startRotation.copy(this.character.quaternion);
+
+    this.dummyObj = new THREE.Object3D();
+  }
+
+  public detachCharacterFromVehicle() {
+    this.character.controlledObject = null;
+    this.character.resetOrientation();
+    this.character.world.scene.attach(this.character);
+    this.character.resetVelocity();
+    this.character.setPhysicsEnabled(true);
+    this.character.setPosition(
+      this.character.position.x,
+      this.character.position.y,
+      this.character.position.z
+    );
+    this.character.inputReceiverUpdate(0);
+    this.character.characterCapsule.body.velocity.copy(
+      (this.vehicle as unknown as Vehicle).rayCastVehicle.chassisBody.velocity
+    );
+    this.character.feetRaycast();
+  }
+
+  public updateEndRotation() {
+    // 계속 호출되지 않나..?
+    const forward = Utils.getForward(this.exitPoint);
+    forward.y = 0;
+    forward.normalize();
+
+    this.character.world.scene.attach(this.dummyObj);
+    this.exitPoint.getWorldPosition(this.dummyObj.position);
+    let target = this.dummyObj.position.clone().add(forward);
+    this.dummyObj.lookAt(target);
+    this.seat.seatPointObject.parent?.attach(this.dummyObj);
+    this.endRotation.copy(this.dummyObj.quaternion);
   }
 }
